@@ -1,0 +1,2010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SequenceIQ — Chain Sequence Intelligence</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg:#0a0d14;--bg-2:#0f131e;--surface:rgba(255,255,255,0.025);--surface-2:rgba(255,255,255,0.045);--border:rgba(255,255,255,0.08);--border-strong:rgba(255,255,255,0.14);--fg:#f4f5f7;--fg-dim:#c5cad6;--muted:#7a8194;--accent:#f59e0b;--accent-2:#fbbf24;--accent-glow:rgba(245,158,11,0.35);--success:#10b981;--success-glow:rgba(16,185,129,0.4);--danger:#f43f5e;--danger-glow:rgba(244,63,94,0.35);--info:#06b6d4;--sidebar-w:64px;--sidebar-exp:224px}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--fg);font-family:'DM Sans',sans-serif;margin:0;min-height:100vh;overflow-x:hidden;background-image:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(245,158,11,0.12),transparent 60%),radial-gradient(ellipse 60% 40% at 100% 100%,rgba(244,63,94,0.07),transparent 60%),radial-gradient(ellipse 60% 40% at 0% 80%,rgba(6,182,212,0.05),transparent 60%)}
+.display-font{font-family:'Bricolage Grotesque',sans-serif;letter-spacing:-0.02em}.mono{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
+.grid-bg{position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px);background-size:56px 56px;pointer-events:none;z-index:0;mask-image:radial-gradient(ellipse 70% 60% at center,black 30%,transparent 80%)}
+.glass{background:linear-gradient(135deg,rgba(255,255,255,0.045),rgba(255,255,255,0.015));border:1px solid var(--border);backdrop-filter:blur(20px)}
+.glass-strong{background:linear-gradient(135deg,rgba(255,255,255,0.07),rgba(255,255,255,0.02));border:1px solid var(--border-strong);backdrop-filter:blur(24px)}
+.chain-node{transition:all .35s cubic-bezier(.4,0,.2,1);position:relative;flex-shrink:0}
+.chain-node.current{transform:translateY(-6px)}
+.chain-node.current .node-card{background:linear-gradient(135deg,rgba(245,158,11,0.18),rgba(245,158,11,0.06));border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 12px 40px var(--accent-glow),inset 0 1px 0 rgba(255,255,255,0.1)}
+.chain-node.current .node-label{color:var(--accent)}
+.chain-node.lost .node-card{opacity:.45;background:linear-gradient(135deg,rgba(244,63,94,0.08),rgba(244,63,94,0.02));border-color:rgba(244,63,94,0.3)}
+.chain-node.lost .node-amount{color:var(--danger);text-decoration:line-through;text-decoration-color:rgba(244,63,94,0.6)}
+.chain-node.won .node-card{background:linear-gradient(135deg,rgba(16,185,129,0.18),rgba(16,185,129,0.04));border-color:var(--success);box-shadow:0 0 0 1px var(--success),0 12px 40px var(--success-glow)}
+.chain-node.won .node-label{color:var(--success)}
+.chain-node.future .node-card{opacity:.55}
+.pulse-ring{position:absolute;inset:-3px;border-radius:14px;border:2px solid var(--accent);opacity:0;animation:pulse-ring 2s ease-out infinite;pointer-events:none}
+.chain-node.current .pulse-ring{opacity:1}
+@keyframes pulse-ring{0%{transform:scale(1);opacity:.7}100%{transform:scale(1.08);opacity:0}}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#1a1300;font-weight:700;transition:all .2s;border:1px solid rgba(255,255,255,0.15)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 10px 28px var(--accent-glow)}.btn-primary:active{transform:translateY(0)}
+.btn-success{background:linear-gradient(135deg,var(--success),#34d399);color:#001a0e;font-weight:700;transition:all .2s;border:1px solid rgba(255,255,255,0.15)}
+.btn-success:hover{transform:translateY(-2px);box-shadow:0 12px 32px var(--success-glow)}
+.btn-danger{background:linear-gradient(135deg,var(--danger),#fb7185);color:#1a0008;font-weight:700;transition:all .2s;border:1px solid rgba(255,255,255,0.15)}
+.btn-danger:hover{transform:translateY(-2px);box-shadow:0 12px 32px var(--danger-glow)}
+.btn-ghost{background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--fg-dim);transition:all .2s}
+.btn-ghost:hover{background:rgba(255,255,255,0.08);color:var(--fg);border-color:var(--border-strong)}
+.btn-ghost.active{background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(245,158,11,0.05));border-color:var(--accent);color:var(--accent-2)}
+input,select{background:rgba(0,0,0,0.35);border:1px solid var(--border);color:var(--fg);transition:all .2s;font-family:'JetBrains Mono',monospace}
+input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}input[type=number]{-moz-appearance:textfield}
+.team-toggle-btn{background:rgba(255,255,255,0.03);border:1.5px solid var(--border);color:var(--fg-dim);transition:all .2s;text-align:center;cursor:pointer}
+.team-toggle-btn:hover{background:rgba(255,255,255,0.06);border-color:var(--border-strong)}
+.team-toggle-btn.active{background:linear-gradient(135deg,rgba(245,158,11,0.18),rgba(245,158,11,0.06));border-color:var(--accent);color:var(--accent-2);box-shadow:0 0 0 1px var(--accent),0 4px 16px var(--accent-glow)}
+.toast-container{position:fixed;top:20px;right:20px;z-index:70;display:flex;flex-direction:column;gap:12px;pointer-events:none;max-width:min(420px,calc(100vw - 24px))}
+.toast-card{pointer-events:auto;display:flex;align-items:flex-start;gap:12px;padding:14px 15px;border-radius:16px;border:1px solid rgba(255,255,255,0.12);background:rgba(10,13,20,0.9);backdrop-filter:blur(18px);box-shadow:0 20px 50px rgba(0,0,0,0.35);transform:translateY(-10px) scale(.98);opacity:0;transition:all .28s cubic-bezier(.2,.8,.2,1);overflow:hidden;position:relative}
+.toast-card.show{opacity:1;transform:translateY(0) scale(1)}
+.toast-card.removing{opacity:0;transform:translateY(-8px) scale(.98)}
+.toast-icon{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;flex-shrink:0;background:rgba(255,255,255,0.07);color:var(--fg-dim);font-size:15px}
+.toast-content{flex:1;min-width:0}
+.toast-title{font-size:13px;font-weight:700;letter-spacing:.01em;margin-bottom:2px}
+.toast-message{font-size:12px;line-height:1.45;color:var(--fg-dim)}
+.toast-card[data-type="success"]{border-color:rgba(16,185,129,0.24)}
+.toast-card[data-type="success"] .toast-icon{color:var(--success);background:rgba(16,185,129,0.14)}
+.toast-card[data-type="danger"]{border-color:rgba(244,63,94,0.24)}
+.toast-card[data-type="danger"] .toast-icon{color:var(--danger);background:rgba(244,63,94,0.14)}
+.toast-card[data-type="warning"]{border-color:rgba(245,158,11,0.24)}
+.toast-card[data-type="warning"] .toast-icon{color:var(--accent-2);background:rgba(245,158,11,0.14)}
+.toast-card[data-type="neutral"]{border-color:rgba(6,182,212,0.2)}
+.toast-card[data-type="neutral"] .toast-icon{color:var(--info);background:rgba(6,182,212,0.14)}
+.toast-progress{position:absolute;left:0;bottom:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent-2));transform-origin:left;animation:toast-progress 3.2s linear forwards}
+@keyframes toast-progress{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+.confirm-modal{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(0,0,0,0.38);backdrop-filter:blur(6px)}
+.confirm-modal.active{display:flex}
+.confirm-card{width:100%;max-width:520px;background:rgba(10,13,20,0.98);border:1px solid rgba(255,255,255,0.12);border-radius:28px;backdrop-filter:blur(24px);box-shadow:0 28px 80px rgba(0,0,0,0.35);padding:28px;position:relative}
+.confirm-header{display:flex;align-items:flex-start;gap:18px;margin-bottom:20px}
+.confirm-icon{width:52px;height:52px;border-radius:18px;display:grid;place-items:center;background:rgba(245,158,11,0.14);color:var(--accent-2);font-size:20px;flex-shrink:0}
+.confirm-title{font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.confirm-heading{font-size:24px;font-weight:800;line-height:1.1;color:var(--fg);margin-bottom:8px}
+.confirm-text{font-size:14px;color:var(--fg-dim);line-height:1.8}
+.confirm-actions{display:flex;justify-content:flex-end;gap:12px;margin-top:24px}
+.confirm-actions .btn-secondary{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:var(--fg);}
+.confirm-actions .btn-secondary:hover{background:rgba(255,255,255,0.1)}
+.confirm-actions .btn-danger{min-width:140px}
+::-webkit-scrollbar{height:10px;width:10px}::-webkit-scrollbar-track{background:rgba(0,0,0,0.2);border-radius:5px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:5px}::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.2)}
+.gradient-text{background:linear-gradient(135deg,#fbbf24 0%,#f59e0b 50%,#f43f5e 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.stat-card{position:relative;overflow:hidden}.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.5}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}.pulse-dot{animation:pulse-dot 2s ease-in-out infinite}
+.connector-line{flex:1;min-width:24px;height:2px;background:linear-gradient(90deg,var(--border-strong),var(--border));position:relative;margin-top:32px}
+.connector-line.active{background:linear-gradient(90deg,var(--danger),var(--accent))}
+.table-row{transition:background .15s}.table-row:hover{background:rgba(255,255,255,0.025)}
+.modal-backdrop{backdrop-filter:blur(8px);background:rgba(0,0,0,0.7)}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;letter-spacing:.02em}
+.badge-success{background:rgba(16,185,129,0.12);color:var(--success);border:1px solid rgba(16,185,129,0.25)}
+.badge-danger{background:rgba(244,63,94,0.12);color:var(--danger);border:1px solid rgba(244,63,94,0.25)}
+.badge-neutral{background:rgba(255,255,255,0.06);color:var(--fg-dim);border:1px solid var(--border)}
+.badge-accent{background:rgba(245,158,11,0.12);color:var(--accent-2);border:1px solid rgba(245,158,11,0.25)}
+.badge-pending{background:rgba(148,163,184,0.12);color:#94a3b8;border:1px solid rgba(148,163,184,0.25)}
+.badge-root{background:linear-gradient(135deg,rgba(245,158,11,0.2),rgba(244,63,94,0.15));color:var(--accent-2);border:1px solid rgba(245,158,11,0.35)}
+.badge-refunded{background:rgba(6,182,212,0.12);color:var(--info);border:1px solid rgba(6,182,212,0.25)}
+.number-glow{text-shadow:0 0 20px currentColor}
+@keyframes float-slow{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}.float-slow{animation:float-slow 6s ease-in-out infinite}
+.hero-orb{position:absolute;border-radius:50%;filter:blur(60px);opacity:.4;pointer-events:none;z-index:0}
+details>summary{list-style:none;cursor:pointer}details>summary::-webkit-details-marker{display:none}details[open] .chevron{transform:rotate(180deg)}.chevron{transition:transform .2s}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}.pulse-dot{animation:pulse-dot 2s ease-in-out infinite}
+
+/* Sidebar */
+#sidebar{position:fixed;left:0;top:0;height:100vh;width:var(--sidebar-w);background:rgba(10,13,20,0.95);border-right:1px solid var(--border);backdrop-filter:blur(24px);z-index:50;transition:width .3s cubic-bezier(.4,0,.2,1);overflow:hidden;display:flex;flex-direction:column}
+#sidebar:hover{width:var(--sidebar-exp)}
+.sidebar-item{display:flex;align-items:center;gap:14px;padding:10px 20px;margin:2px 8px;border-radius:10px;color:var(--muted);cursor:pointer;transition:all .2s;border:none;background:transparent;width:calc(100% - 16px);text-align:left;font-size:13px;font-weight:500;white-space:nowrap;font-family:'DM Sans',sans-serif}
+.sidebar-item:hover{background:rgba(255,255,255,0.06);color:var(--fg-dim)}
+.sidebar-item.active{background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(245,158,11,0.05));color:var(--accent-2);border:1px solid rgba(245,158,11,0.2)}
+.sidebar-item i{width:24px;text-align:center;font-size:15px;flex-shrink:0}
+.sidebar-label{opacity:0;transition:opacity .15s ease .08s}
+#sidebar:hover .sidebar-label{opacity:1}
+.sidebar-divider{height:1px;background:var(--border);margin:8px 16px}
+.main-wrap{margin-left:var(--sidebar-w);transition:margin-left .3s;position:relative;z-index:1;min-height:100vh}
+.page-section{padding:0}
+.page-section.hidden{display:none}
+
+/* Mobile */
+#mobileMenuBtn{display:none}
+#mobileOverlay{display:none}
+@media(max-width:767px){
+  #sidebar{transform:translateX(-100%);width:var(--sidebar-exp)}
+  #sidebar.mob-open{transform:translateX(0)}
+  #sidebar.mob-open .sidebar-label{opacity:1}
+  .main-wrap{margin-left:0}
+  #mobileMenuBtn{display:flex}
+  #mobileOverlay.active{display:block;position:fixed;inset:0;z-index:45;background:rgba(0,0,0,0.5)}
+}
+
+.action-dropdown{position:absolute;right:0;top:100%;z-index:60;background:rgba(15,19,30,0.97);border:1px solid var(--border-strong);border-radius:10px;padding:4px;min-width:150px;box-shadow:0 12px 40px rgba(0,0,0,0.6);backdrop-filter:blur(20px)}
+.action-dropdown button{width:100%;text-align:left;padding:7px 12px;border-radius:6px;font-size:12px;font-weight:600;border:none;background:transparent;color:var(--fg-dim);cursor:pointer;transition:background .15s;display:flex;align-items:center;gap:8px;font-family:'DM Sans',sans-serif}
+.action-dropdown button:hover{background:rgba(255,255,255,0.08);color:var(--fg)}
+.action-dropdown button .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<!-- Mobile Menu Button -->
+<button id="mobileMenuBtn" onclick="toggleMobileMenu()" class="fixed top-4 left-4 z-[55] btn-ghost w-10 h-10 rounded-lg items-center justify-center">
+  <i class="fa-solid fa-bars"></i>
+</button>
+<div id="mobileOverlay" onclick="toggleMobileMenu()"></div>
+
+<!-- Sidebar -->
+<aside id="sidebar">
+  <div class="flex items-center gap-3 px-4 h-16 flex-shrink-0">
+    <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:linear-gradient(135deg,var(--accent),var(--danger));">
+      <i class="fa-solid fa-link text-black text-sm"></i>
+    </div>
+    <div class="sidebar-label">
+      <div class="display-font font-bold text-sm leading-none">Sequence<span class="gradient-text">IQ</span></div>
+      <div class="text-[9px] text-[var(--muted)] tracking-widest uppercase mt-0.5">Chain Intelligence</div>
+    </div>
+  </div>
+  <div class="sidebar-divider"></div>
+  <nav class="flex flex-col gap-0.5 flex-1 py-1 overflow-y-auto">
+    <button class="sidebar-item active" data-page="new-entry" onclick="navigateTo('new-entry')"><i class="fa-solid fa-file-circle-plus"></i><span class="sidebar-label">New Entry</span></button>
+    <button class="sidebar-item" data-page="dashboard" onclick="navigateTo('dashboard')"><i class="fa-solid fa-gauge-high"></i><span class="sidebar-label">Dashboard</span></button>
+    <button class="sidebar-item" data-page="live" onclick="navigateTo('live')"><i class="fa-solid fa-satellite-dish"></i><span class="sidebar-label">Live</span></button>
+    <button class="sidebar-item" data-page="chain" onclick="navigateTo('chain')"><i class="fa-solid fa-link"></i><span class="sidebar-label">Chain</span></button>
+    <button class="sidebar-item" data-page="active-session" onclick="navigateTo('active-session')"><i class="fa-solid fa-bolt"></i><span class="sidebar-label">Active Session</span></button>
+    <button class="sidebar-item" data-page="pending" onclick="navigateTo('pending')"><i class="fa-solid fa-clock"></i><span class="sidebar-label">Pending</span></button>
+    <button class="sidebar-item" data-page="analytics" onclick="navigateTo('analytics')"><i class="fa-solid fa-chart-bar"></i><span class="sidebar-label">Analytics</span></button>
+    <button class="sidebar-item" data-page="history" onclick="navigateTo('history')"><i class="fa-solid fa-clock-rotate-left"></i><span class="sidebar-label">History</span></button>
+  </nav>
+  <div class="sidebar-divider"></div>
+  <div class="flex flex-col gap-0.5 pb-4">
+    <button class="sidebar-item" onclick="importData()"><i class="fa-solid fa-upload"></i><span class="sidebar-label">Import</span></button>
+    <button class="sidebar-item" onclick="exportData()"><i class="fa-solid fa-download"></i><span class="sidebar-label">Export</span></button>
+    <button class="sidebar-item" onclick="permanentReset()" style="color:var(--danger);"><i class="fa-solid fa-arrow-rotate-left"></i><span class="sidebar-label">Reset</span></button>
+  </div>
+</aside>
+
+<!-- Main Content -->
+<div class="main-wrap">
+
+<!-- ====== NEW ENTRY PAGE ====== -->
+<div id="page-new-entry" class="page-section">
+  <section class="px-4 md:px-6 pt-6 md:pt-8">
+    <div class="max-w-[1400px] mx-auto">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="badge badge-accent"><span class="w-1.5 h-1.5 rounded-full bg-current pulse-dot"></span> NEW ENTRY</span>
+      </div>
+      <h1 class="display-font text-3xl md:text-4xl font-bold mb-1">Create New Entry</h1>
+      <p class="text-sm text-[var(--muted)] mb-6">Set up match details and add to your chain sequence</p>
+
+      <!-- Chain Viz -->
+      <div class="flex items-end justify-between mb-4 gap-4 flex-wrap">
+        <div><h2 class="display-font text-xl font-bold">Chain Sequence</h2><p class="text-sm text-[var(--muted)] mt-1"><span id="neChainSummary">+15 Profit Model @ 1.95X odds</span> · <span class="text-[var(--accent-2)]">Exposure: <span id="neChainExposure" class="mono">NRs. 0.00</span></span></p></div>
+        <div class="flex items-center gap-2 text-xs">
+          <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full" style="background:var(--success);"></div><span class="text-[var(--muted)]">Won</span></div>
+          <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full" style="background:var(--accent);"></div><span class="text-[var(--muted)]">Current</span></div>
+          <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full" style="background:var(--danger);"></div><span class="text-[var(--muted)]">Lost</span></div>
+          <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full" style="background:rgba(255,255,255,0.2);"></div><span class="text-[var(--muted)]">Future</span></div>
+        </div>
+      </div>
+      <div class="glass rounded-2xl p-4 md:p-5 overflow-x-auto mb-6"><div id="neChainContainer" class="flex items-start gap-0 min-w-max"></div></div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-5">
+        <!-- Entry Form -->
+        <div class="lg:col-span-3 glass-strong rounded-2xl p-6 md:p-8 relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-64 h-64 rounded-full" style="background:radial-gradient(circle,var(--accent-glow),transparent 70%);opacity:.4;"></div>
+          <div class="relative z-10">
+            <div class="text-xs text-[var(--muted)] uppercase tracking-widest mb-1">Sequence Setup</div>
+            <h3 class="display-font text-xl font-bold mb-5" id="neFormTitle">New Sequence</h3>
+            <div class="mb-5 p-4 glass rounded-xl">
+              <div class="flex items-center justify-between mb-2">
+                <label class="text-xs text-[var(--muted)] uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-hashtag text-[var(--accent)]"></i> Root Sequence ID</label>
+                <button id="neRegenBtn" onclick="regenerateNESeqId()" class="text-xs text-[var(--muted)] hover:text-[var(--accent-2)] transition-colors flex items-center gap-1"><i class="fa-solid fa-rotate text-[10px]"></i> Regenerate</button>
+              </div>
+              <input type="text" id="neSeqId" placeholder="SEQ-XXXXX" class="w-full px-3 py-2.5 rounded-lg text-base font-bold tracking-wider">
+              <div id="neBranchSeqIdWrap" class="mt-3 hidden">
+                <label class="text-[10px] text-[var(--muted)] uppercase tracking-wider mb-1 block">Branch Sequence ID (BR-xxxxx)</label>
+                <input type="text" id="neBranchSeqId" placeholder="BR-12345" class="w-full px-3 py-2.5 rounded-lg text-sm font-semibold tracking-wider" oninput="normalizeBranchSeqInput()">
+              </div>
+              <div id="neBranchInfo" class="text-[10px] text-[var(--muted)] mt-1.5">Starting at R0 — Root Entry</div>
+            </div>
+            <div class="mb-5 p-4 glass rounded-xl">
+              <label class="text-xs text-[var(--muted)] uppercase tracking-widest flex items-center gap-2 mb-3"><i class="fa-solid fa-shield-halved text-[var(--info)]"></i> Match Details <span class="badge badge-neutral ml-1">Branch: <span id="neBranchLabel" class="text-[var(--accent-2)]">R0</span></span></label>
+              <div class="grid grid-cols-2 gap-3 mb-3">
+                <div><label class="text-[10px] text-[var(--muted)] uppercase mb-1 block">Team 1</label><input type="text" id="neTeam1" placeholder="e.g. Liverpool" class="w-full px-3 py-2 rounded-lg text-sm" oninput="neTeam1Val=this.value"></div>
+                <div><label class="text-[10px] text-[var(--muted)] uppercase mb-1 block">Team 2</label><input type="text" id="neTeam2" placeholder="e.g. Arsenal" class="w-full px-3 py-2 rounded-lg text-sm" oninput="neTeam2Val=this.value"></div>
+              </div>
+              <div class="flex gap-2 mb-3">
+                <button id="nePick1" onclick="neSelectTeam('team1')" class="team-toggle-btn flex-1 py-2.5 rounded-lg"><div class="text-[10px] uppercase opacity-60">Pick</div><div class="text-sm font-semibold" id="nePick1Name">Team 1</div></button>
+                <div class="flex items-center px-2 text-[var(--muted)] text-xs font-bold">VS</div>
+                <button id="nePick2" onclick="neSelectTeam('team2')" class="team-toggle-btn flex-1 py-2.5 rounded-lg"><div class="text-[10px] uppercase opacity-60">Pick</div><div class="text-sm font-semibold" id="nePick2Name">Team 2</div></button>
+              </div>
+              <div class="flex items-center justify-center gap-2 py-2 rounded-lg" style="background:rgba(255,255,255,0.02);"><span class="text-xs text-[var(--muted)] uppercase tracking-wider">Selected:</span><span id="neSelectedDisplay" class="text-sm font-bold text-[var(--muted)]">None</span></div>
+            </div>
+            <div class="grid grid-cols-3 gap-3 mb-5">
+              <div class="glass rounded-xl p-3"><div class="text-[10px] text-[var(--muted)] uppercase tracking-wider mb-1">Stake</div><div class="mono font-bold text-[var(--accent-2)]" id="neStakeDisplay">NRs. 22.00</div></div>
+              <div class="glass rounded-xl p-3"><div class="text-[10px] text-[var(--muted)] uppercase tracking-wider mb-1">Cum. Loss</div><div class="mono font-bold text-[var(--danger)]" id="neCumLossDisplay">NRs. 0.00</div></div>
+              <div class="glass rounded-xl p-3"><div class="text-[10px] text-[var(--muted)] uppercase tracking-wider mb-1">If Win</div><div class="mono font-bold text-[var(--success)]" id="neProfitDisplay">+NRs. 15.00</div></div>
+            </div>
+            <button id="neCreateBtn" onclick="createEntry()" class="btn-primary w-full py-3.5 rounded-xl text-sm flex items-center justify-center gap-2"><i class="fa-solid fa-plus"></i><span id="neCreateBtnText">Create Entry</span></button>
+            <div id="neForceNewLink" class="hidden text-center mt-3">
+              <button type="button" onclick="switchToNewEntryForm()" class="text-sm text-[var(--accent-2)] hover:text-white transition-colors">I want New Entry Instead</button>
+            </div>
+          </div>
+        </div>
+        <!-- Profit Model -->
+        <div class="lg:col-span-2 glass rounded-2xl p-6">
+          <div class="text-xs text-[var(--muted)] uppercase tracking-widest mb-1">Configuration</div>
+          <h3 class="display-font text-lg font-bold mb-5">Profit Model</h3>
+          <div class="space-y-4">
+            <div><label class="text-xs text-[var(--muted)] uppercase tracking-wider mb-2 block">Quick Select</label><div class="grid grid-cols-3 gap-2" id="neProfitBtns"><button data-profit="10" class="btn-ghost py-2 rounded-lg text-sm font-semibold">+10</button><button data-profit="15" class="btn-ghost active py-2 rounded-lg text-sm font-semibold">+15</button><button data-profit="20" class="btn-ghost py-2 rounded-lg text-sm font-semibold">+20</button><button data-profit="25" class="btn-ghost py-2 rounded-lg text-sm font-semibold">+25</button><button data-profit="30" class="btn-ghost py-2 rounded-lg text-sm font-semibold">+30</button><button data-profit="50" class="btn-ghost py-2 rounded-lg text-sm font-semibold">+50</button></div></div>
+            <div class="grid grid-cols-2 gap-3">
+              <div><label class="text-xs text-[var(--muted)] uppercase tracking-wider mb-2 block">Root Stake (NRs)</label><input type="number" id="neRootBet" value="22" step="1" min="1" class="w-full px-3 py-2.5 rounded-lg text-sm"></div>
+              <div><label class="text-xs text-[var(--muted)] uppercase tracking-wider mb-2 block">Odds</label><input type="number" id="neOdds" value="1.95" step="0.01" min="1.01" class="w-full px-3 py-2.5 rounded-lg text-sm"></div>
+            </div>
+            <div><label class="text-xs text-[var(--muted)] uppercase tracking-wider mb-2 block">Target Profit (NRs)</label><input type="number" id="neProfit" value="15" step="1" min="1" class="w-full px-3 py-2.5 rounded-lg text-sm"></div>
+            <div class="pt-4 border-t border-white/5"><div class="flex items-center justify-between text-sm"><span class="text-[var(--muted)]">Total Exposure</span><span class="mono font-semibold" id="neExposure">NRs. 0.00</span></div></div>
+            <details class="pt-2"><summary class="flex items-center justify-between text-xs text-[var(--muted)] hover:text-white py-2"><span class="flex items-center gap-2"><i class="fa-solid fa-circle-question"></i> How is stake calculated?</span><i class="fa-solid fa-chevron-down chevron text-[10px]"></i></summary><div class="text-xs text-[var(--fg-dim)] mt-3 p-3 glass rounded-lg leading-relaxed"><div class="mono text-[11px] mb-2 text-[var(--accent-2)]">B(n) = (Σ previous stakes + target) / (odds − 1)</div>Each branch recovers all prior losses plus the target profit.</div></details>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ====== DASHBOARD PAGE ====== -->
+<div id="page-dashboard" class="page-section hidden">
+  <section class="px-4 md:px-6 pt-6 md:pt-8 pb-8">
+    <div class="max-w-[1400px] mx-auto">
+      <div class="flex items-center gap-2 mb-4"><span class="badge badge-accent"><span class="w-1.5 h-1.5 rounded-full bg-current pulse-dot"></span> OVERVIEW</span></div>
+      <h1 class="display-font text-3xl md:text-4xl font-bold mb-1">Dashboard</h1>
+      <p class="text-sm text-[var(--muted)] mb-6">Your sequence performance at a glance</p>
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        <div class="stat-card glass rounded-2xl p-5"><div class="flex items-center justify-between mb-3"><span class="text-xs text-[var(--muted)] uppercase tracking-wider">Net P/L</span><div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:rgba(16,185,129,0.1);"><i class="fa-solid fa-arrow-trend-up text-[var(--success)] text-sm"></i></div></div><div id="statNetPL" class="display-font text-3xl font-bold mono">NRs. 0.00</div><div id="statNetPLSub" class="text-xs text-[var(--muted)] mt-1">No entries yet</div></div>
+        <div class="stat-card glass rounded-2xl p-5"><div class="flex items-center justify-between mb-3"><span class="text-xs text-[var(--muted)] uppercase tracking-wider">Win Rate</span><div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:rgba(245,158,11,0.1);"><i class="fa-solid fa-trophy text-[var(--accent)] text-sm"></i></div></div><div id="statWinRate" class="display-font text-3xl font-bold mono">0%</div><div id="statWinRateSub" class="text-xs text-[var(--muted)] mt-1">0W / 0L</div></div>
+        <div class="stat-card glass rounded-2xl p-5"><div class="flex items-center justify-between mb-3"><span class="text-xs text-[var(--muted)] uppercase tracking-wider">Entries</span><div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:rgba(6,182,212,0.1);"><i class="fa-solid fa-layer-group text-[var(--info)] text-sm"></i></div></div><div id="statEntries" class="display-font text-3xl font-bold mono">0</div><div id="statEntriesSub" class="text-xs text-[var(--muted)] mt-1">Total recorded</div></div>
+        <div class="stat-card glass rounded-2xl p-5"><div class="flex items-center justify-between mb-3"><span class="text-xs text-[var(--muted)] uppercase tracking-wider">Current</span><div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:rgba(244,63,94,0.1);"><i class="fa-solid fa-location-crosshairs text-[var(--danger)] text-sm"></i></div></div><div id="statCurrent" class="display-font text-3xl font-bold mono">IDLE</div><div id="statCurrentSub" class="text-xs text-[var(--muted)] mt-1">No active session</div></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ====== LIVE PAGE ====== -->
+<div id="page-live" class="page-section hidden">
+  <section class="px-4 md:px-6 pt-6 md:pt-8 pb-8">
+    <div class="max-w-[1400px] mx-auto">
+      <div class="flex items-center justify-between mb-4 gap-4 flex-wrap">
+        <div>
+          <div class="flex items-center gap-2 mb-1"><span class="badge badge-accent"><span class="w-1.5 h-1.5 rounded-full bg-current pulse-dot"></span> LIVE MATCHES</span></div>
+          <h1 class="display-font text-3xl md:text-4xl font-bold">Live</h1>
+          <p class="text-sm text-[var(--muted)] mt-1">View live or upcoming Cricket or Football match details from the selected API.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <select id="liveSportSelect" class="px-3 py-2 rounded-lg text-sm" onchange="loadLiveMatches()">
+            <option value="cricket">Cricket</option>
+            <option value="football">Football</option>
+          </select>
+          <button onclick="loadLiveMatches()" class="btn-ghost px-3 py-2 rounded-xl text-sm inline-flex items-center gap-2"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
+        </div>
+      </div>
+      <div class="glass-strong rounded-2xl p-5 md:p-6">
+        <div class="flex items-center justify-between gap-3 mb-4 flex-wrap">
+          <div>
+            <h2 class="display-font text-xl font-bold">Matches</h2>
+            <p class="text-sm text-[var(--muted)] mt-1">Relevant live or upcoming stats from the selected sport source.</p>
+          </div>
+          <span id="liveStatus" class="badge badge-neutral">Loading…</span>
+        </div>
+        <div id="liveMatchesList" class="grid gap-3"></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ====== CHAIN PAGE ====== -->
+<div id="page-chain" class="page-section hidden">
+  <section class="px-4 md:px-6 pt-6 md:pt-8 pb-8">
+    <div class="max-w-[1400px] mx-auto">
+      <div class="flex items-center gap-2 mb-4"><span class="badge badge-accent">CHAIN VISUALIZATION</span></div>
+      <h1 class="display-font text-3xl md:text-4xl font-bold mb-1">Chain Sequence</h1>
+      <p class="text-sm text-[var(--muted)] mb-6">Full stake progression across all branches</p>
+      <div class="glass rounded-2xl p-5 md:p-6 overflow-x-auto mb-6"><div id="chainPageContainer" class="flex items-start gap-0 min-w-max"></div></div>
+      <h2 class="display-font text-2xl font-bold mb-5">Risk Analyzer</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="glass rounded-2xl p-6"><div class="flex items-center gap-3 mb-4"><div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:rgba(245,158,11,0.12);"><i class="fa-solid fa-percent text-[var(--accent)]"></i></div><div><div class="text-xs text-[var(--muted)] uppercase tracking-wider">Loss Streak</div><div class="text-sm font-semibold">Probability</div></div></div><div class="space-y-2.5" id="streakProbabilities"></div></div>
+        <div class="glass rounded-2xl p-6"><div class="flex items-center gap-3 mb-4"><div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:rgba(244,63,94,0.12);"><i class="fa-solid fa-vault text-[var(--danger)]"></i></div><div><div class="text-xs text-[var(--muted)] uppercase tracking-wider">Bankroll</div><div class="text-sm font-semibold">Requirement</div></div></div><div class="mb-4"><div class="text-xs text-[var(--muted)] mb-1">Full chain survival</div><div class="mono text-2xl font-bold text-[var(--danger)]">NRs. <span id="bankrollRequired">0.00</span></div></div><div class="mb-4"><div class="text-xs text-[var(--muted)] mb-1">Per chain (avg)</div><div class="mono text-2xl font-bold text-[var(--accent-2)]">NRs. <span id="avgChainCost">0.00</span></div></div><div class="text-[11px] text-[var(--muted)]">Implied prob: <span id="impliedProb" class="mono text-[var(--fg-dim)]">51.28%</span></div></div>
+        <div class="glass rounded-2xl p-6"><div class="flex items-center gap-3 mb-4"><div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:rgba(16,185,129,0.12);"><i class="fa-solid fa-scale-balanced text-[var(--success)]"></i></div><div><div class="text-xs text-[var(--muted)] uppercase tracking-wider">Break-Even</div><div class="text-sm font-semibold">Threshold</div></div></div><div class="mb-4"><div class="text-xs text-[var(--muted)] mb-1">Required win rate</div><div class="mono text-3xl font-bold text-[var(--success)]" id="breakEvenWinRate">51.28%</div></div><div class="space-y-2 text-xs"><div class="flex justify-between"><span class="text-[var(--muted)]">Implied probability</span><span class="mono" id="impliedProb2">51.28%</span></div><div class="flex justify-between"><span class="text-[var(--muted)]">House edge</span><span class="mono text-[var(--danger)]" id="houseEdge">2.56%</span></div><div class="flex justify-between"><span class="text-[var(--muted)]">Profit margin</span><span class="mono text-[var(--accent-2)]" id="profitMargin">+15.00</span></div></div></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ====== ACTIVE SESSION PAGE ====== -->
+<div id="page-active-session" class="page-section hidden">
+  <section class="px-4 md:px-6 pt-6 md:pt-8 pb-8">
+    <div class="max-w-[1400px] mx-auto">
+      <div class="flex items-center justify-between mb-4 gap-4 flex-wrap">
+        <div><div class="flex items-center gap-2 mb-1"><span class="badge badge-accent"><span class="w-1.5 h-1.5 rounded-full bg-current pulse-dot"></span> ACTIVE</span></div><h1 class="display-font text-3xl md:text-4xl font-bold">Active Session</h1></div>
+        <div id="asTimer" class="hidden text-right"><div class="text-xs text-[var(--muted)] uppercase tracking-wider">Elapsed</div><div class="mono text-sm font-semibold" id="timerDisplay">00:00:00</div></div>
+      </div>
+        <!-- Empty -->
+        <div id="asEmpty" class="glass-strong rounded-2xl p-8 md:p-12 text-center">
+          <div class="w-20 h-20 mx-auto rounded-2xl glass flex items-center justify-center mb-4"><i class="fa-solid fa-bolt text-3xl text-[var(--muted)]"></i></div>
+          <h3 class="display-font text-xl font-semibold mb-2">No Active Session</h3>
+          <p class="text-sm text-[var(--muted)] mb-6">Create a new entry to start a chain sequence</p>
+          <button onclick="navigateTo('new-entry')" class="btn-primary px-6 py-3 rounded-xl text-sm inline-flex items-center gap-2"><i class="fa-solid fa-plus"></i> Go to New Entry</button>
+        </div>
+        <!-- Waiting -->
+        <div id="asWaiting" class="hidden glass-strong rounded-2xl p-8 md:p-12 text-center">
+          <div class="w-20 h-20 mx-auto rounded-2xl glass flex items-center justify-center mb-4"><i class="fa-solid fa-hourglass-half text-3xl text-[var(--accent)]"></i></div>
+          <h3 class="display-font text-xl font-semibold mb-2">Awaiting Next Entry</h3>
+          <p class="text-sm text-[var(--muted)] mb-2">Branch advanced to <span id="asWaitBranch" class="mono font-bold text-[var(--accent-2)]">B1</span></p>
+          <p class="text-sm text-[var(--muted)] mb-6">Go to New Entry to create the next match record</p>
+        
+          <div class="flex flex-col items-center">
+    <button onclick="navigateTo('new-entry')"
+        class="btn-primary px-6 py-3 rounded-xl text-sm inline-flex items-center gap-2">
+        <i class="fa-solid fa-plus"></i>
+        Create Next Entry
+    </button>
+
+    <button onclick="postponeActiveSession()"
+        class="mt-3 text-sm text-[var(--muted)] hover:text-[var(--accent-2)] underline-offset-4 hover:underline transition-colors inline-flex items-center gap-2">
+        <i class="fa-solid fa-rotate-left text-[11px]"></i>
+        <span>Postpone Active Session</span>
+    </button>
+</div>
+
+
+        <!-- Active -->
+        <div id="asActive" class="hidden glass-strong rounded-2xl p-6 md:p-8 relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-64 h-64 rounded-full" style="background:radial-gradient(circle,var(--accent-glow),transparent 70%);opacity:.4;"></div>
+          <div class="relative z-10">
+            <div class="flex items-center justify-between mb-5">
+              <div><div class="text-xs text-[var(--muted)] uppercase tracking-widest mb-1">Sequence</div><div id="asSeqId" class="display-font text-xl font-bold">SEQ-XXXXX</div></div>
+              <span id="asBranchBadge" class="badge badge-accent text-sm">R0</span>
+            </div>
+            <div class="grid grid-cols-3 gap-3 mb-5">
+              <div class="glass rounded-xl p-3"><div class="text-[10px] text-[var(--muted)] uppercase tracking-wider mb-1">Stake</div><div class="mono font-bold text-[var(--accent-2)]" id="asStake">NRs. 22.00</div></div>
+              <div class="glass rounded-xl p-3"><div class="text-[10px] text-[var(--muted)] uppercase tracking-wider mb-1">Cum. Loss</div><div class="mono font-bold text-[var(--danger)]" id="asCumLoss">NRs. 0.00</div></div>
+              <div class="glass rounded-xl p-3"><div class="text-[10px] text-[var(--muted)] uppercase tracking-wider mb-1">If Win</div><div class="mono font-bold text-[var(--success)]" id="asProfit">+NRs. 15.00</div></div>
+            </div>
+            <div class="p-4 glass rounded-xl mb-5">
+              <div class="text-xs text-[var(--muted)] uppercase tracking-widest mb-3 flex items-center gap-2"><i class="fa-solid fa-shield-halved text-[var(--info)]"></i> Match Details</div>
+              <div class="flex items-center justify-center gap-4 mb-2">
+                <div class="text-center"><div class="text-[10px] text-[var(--muted)] uppercase mb-1">Team 1</div><div class="text-sm font-semibold" id="asTeam1">—</div></div>
+                <div class="text-xs text-[var(--muted)] font-bold">VS</div>
+                <div class="text-center"><div class="text-[10px] text-[var(--muted)] uppercase mb-1">Team 2</div><div class="text-sm font-semibold" id="asTeam2">—</div></div>
+              </div>
+              <div class="flex items-center justify-center gap-2 py-1.5 rounded-lg" style="background:rgba(255,255,255,0.02);"><span class="text-xs text-[var(--muted)] uppercase tracking-wider">Picked:</span><span id="asPicked" class="text-sm font-bold text-[var(--accent-2)]">None</span></div>
+            </div>
+            <div class="text-xs text-[var(--muted)] mb-3 flex items-center gap-2"><i class="fa-solid fa-circle-info"></i> Record the outcome of this prediction</div>
+            <div class="grid grid-cols-2 gap-3 mb-2">
+              <button onclick="recordWin()" class="btn-success py-4 rounded-xl flex items-center justify-center gap-2 text-base"><i class="fa-solid fa-check"></i><span>Prediction Won</span><kbd class="ml-2 px-1.5 py-0.5 text-[10px] rounded bg-black/20">W</kbd></button>
+              <button onclick="recordLoss()" class="btn-danger py-4 rounded-xl flex items-center justify-center gap-2 text-base"><i class="fa-solid fa-xmark"></i><span>Prediction Lost</span><kbd class="ml-2 px-1.5 py-0.5 text-[10px] rounded bg-black/20">L</kbd></button>
+            </div>
+            <button onclick="recordPending()" class="btn-ghost w-full py-2.5 rounded-xl flex items-center justify-center gap-2 text-sm"><i class="fa-solid fa-clock text-xs"></i><span>Mark as Pending</span><kbd class="ml-2 px-1.5 py-0.5 text-[10px] rounded bg-white/5">F</kbd></button>
+
+
+            <div class="mt-3 text-right">
+    <button onclick="resetSession()" class="text-[var(--muted)] hover:text-orange-500 transition-colors text-xs flex items-center gap-1.5 ml-auto">
+        <i class="fa-solid fa-floppy-disk text-amber-500"></i>
+        Save and Exit To History
+    </button>
+</div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ====== PENDING PAGE ====== -->
+<div id="page-pending" class="page-section hidden">
+  <section class="px-4 md:px-6 pt-6 md:pt-8 pb-8">
+    <div class="max-w-[1400px] mx-auto">
+      <div class="flex items-center justify-between mb-4 gap-4 flex-wrap">
+        <div><div class="flex items-center gap-2 mb-1"><span class="badge badge-accent"><span class="w-1.5 h-1.5 rounded-full bg-current pulse-dot"></span> PENDING</span></div><h1 class="display-font text-3xl md:text-4xl font-bold">Pending Entries</h1></div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+        <div class="glass rounded-2xl p-6">
+          <div class="text-xs text-[var(--muted)] uppercase tracking-wider mb-2">Pending entries</div>
+          <div class="display-font text-4xl font-bold" id="pendingCount">0</div>
+          <div class="text-sm text-[var(--muted)] mt-2">Entries waiting for result</div>
+        </div>
+        <div class="glass rounded-2xl p-6">
+          <div class="text-xs text-[var(--muted)] uppercase tracking-wider mb-2">Total stake</div>
+          <div class="display-font text-4xl font-bold" id="pendingStake">NRs. 0.00</div>
+          <div class="text-sm text-[var(--muted)] mt-2">Pending stake amount</div>
+        </div>
+        <div class="glass rounded-2xl p-6">
+          <div class="text-xs text-[var(--muted)] uppercase tracking-wider mb-2">Sequences</div>
+          <div class="display-font text-4xl font-bold" id="pendingSequences">0</div>
+          <div class="text-sm text-[var(--muted)] mt-2">Sequences with pending entries</div>
+        </div>
+      </div>
+      <div id="pendingList" class="space-y-4"></div>
+    </div>
+  </section>
+</div>
+
+<!-- ====== ANALYTICS PAGE ====== -->
+<div id="page-analytics" class="page-section hidden">
+  <section class="px-4 md:px-6 pt-6 md:pt-8 pb-8">
+    <div class="max-w-[1400px] mx-auto">
+      <h1 class="display-font text-3xl md:text-4xl font-bold mb-6">Analytics</h1>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div class="lg:col-span-2 glass rounded-2xl p-6"><div class="mb-4"><div class="text-xs text-[var(--muted)] uppercase tracking-wider">Cumulative</div><h3 class="display-font text-lg font-bold">Profit / Loss Over Time</h3></div><div class="h-64"><canvas id="cumulativeChart"></canvas></div></div>
+        <div class="glass rounded-2xl p-6"><div class="mb-4"><div class="text-xs text-[var(--muted)] uppercase tracking-wider">Distribution</div><h3 class="display-font text-lg font-bold">Wins by Branch</h3></div><div class="h-64"><canvas id="branchChart"></canvas></div></div>
+      </div>
+      <div class="glass rounded-2xl p-6 mt-5">
+        <div class="flex items-center justify-between mb-4 flex-wrap gap-3"><div><div class="text-xs text-[var(--muted)] uppercase tracking-wider">Team Performance</div><h3 class="display-font text-lg font-bold">Match & Team Analytics</h3></div><div class="flex items-center gap-4 text-xs"><div class="text-center"><div class="text-[var(--muted)] uppercase tracking-wider">Matches</div><div class="mono font-bold text-lg" id="teamTotalMatches">0</div></div><div class="w-px h-8 bg-white/10"></div><div class="text-center"><div class="text-[var(--muted)] uppercase tracking-wider">Unique Teams</div><div class="mono font-bold text-lg" id="teamUniqueTeams">0</div></div><div class="w-px h-8 bg-white/10"></div><div class="text-center"><div class="text-[var(--muted)] uppercase tracking-wider">Teams Won</div><div class="mono font-bold text-lg text-[var(--success)]" id="teamTotalWins">0</div></div></div></div>
+        <div id="teamStatsList" class="grid grid-cols-1 md:grid-cols-2 gap-2"></div>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-5">
+        <div class="glass rounded-xl p-4"><div class="text-xs text-[var(--muted)] uppercase tracking-wider mb-1">Best Streak</div><div class="mono text-xl font-bold" id="metricBestStreak">0</div><div class="text-[10px] text-[var(--muted)]">consecutive wins</div></div>
+        <div class="glass rounded-xl p-4"><div class="text-xs text-[var(--muted)] uppercase tracking-wider mb-1">Worst Streak</div><div class="mono text-xl font-bold text-[var(--danger)]" id="metricWorstStreak">0</div><div class="text-[10px] text-[var(--muted)]">consecutive losses</div></div>
+        <div class="glass rounded-xl p-4"><div class="text-xs text-[var(--muted)] uppercase tracking-wider mb-1">Avg Branch</div><div class="mono text-xl font-bold text-[var(--accent-2)]" id="metricAvgBranch">—</div><div class="text-[10px] text-[var(--muted)]">where wins occur</div></div>
+        <div class="glass rounded-xl p-4"><div class="text-xs text-[var(--muted)] uppercase tracking-wider mb-1">Total Staked</div><div class="mono text-xl font-bold" id="metricTotalWagered">NRs. 0</div><div class="text-[10px] text-[var(--muted)]">all entries</div></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ====== HISTORY PAGE ====== -->
+<div id="page-history" class="page-section hidden">
+  <section class="px-4 md:px-6 pt-6 md:pt-8 pb-8">
+    <div class="max-w-[1400px] mx-auto">
+      <div class="flex items-end justify-between mb-5 gap-4 flex-wrap">
+        <div><h1 class="display-font text-3xl md:text-4xl font-bold mb-1">History</h1><p class="text-sm text-[var(--muted)]">Every recorded entry</p></div>
+        <div class="flex items-center gap-2">
+          <select id="historyFilter" class="px-3 py-2 rounded-lg text-sm"><option value="all">All entries</option><option value="win">Wins only</option><option value="loss">Losses only</option><option value="pending">Pending</option><option value="postponed">Postponed</option></select>
+          <button id="clearHistoryBtn" class="btn-ghost px-3 py-2 rounded-lg text-sm flex items-center gap-2"><i class="fa-solid fa-trash text-xs"></i><span>Clear</span></button>
+        </div>
+      </div>
+      <div class="glass rounded-2xl overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead><tr class="text-left text-xs text-[var(--muted)] uppercase tracking-wider border-b border-white/10">
+              <th class="px-4 py-3 font-medium">Date</th><th class="px-4 py-3 font-medium">Time</th><th class="px-4 py-3 font-medium">Seq ID</th><th class="px-4 py-3 font-medium">Branch</th><th class="px-4 py-3 font-medium">Team 1</th><th class="px-4 py-3 font-medium">Team 2</th><th class="px-4 py-3 font-medium">Picked</th><th class="px-4 py-3 font-medium text-right">Stake</th><th class="px-4 py-3 font-medium">Result</th><th class="px-4 py-3 font-medium text-right">Actions</th>
+            </tr></thead>
+            <tbody id="historyTableBody"></tbody>
+          </table>
+        </div>
+        <div id="historyEmpty" class="text-center py-16"><div class="w-16 h-16 mx-auto rounded-2xl glass flex items-center justify-center mb-3"><i class="fa-solid fa-folder-open text-2xl text-[var(--muted)]"></i></div><p class="text-sm text-[var(--muted)]">No entries recorded yet</p></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- Footer -->
+<footer class="border-t border-white/5 px-4 md:px-6 py-6">
+  <div class="max-w-[1400px] mx-auto">
+    <div class="glass rounded-xl p-4 mb-4 border-[var(--accent)]/20">
+      <div class="flex items-start gap-3"><div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style="background:rgba(245,158,11,0.12);"><i class="fa-solid fa-triangle-exclamation text-[var(--accent)]"></i></div><div><h4 class="font-semibold text-sm mb-1">Responsible Analytics Notice</h4><p class="text-xs text-[var(--muted)] leading-relaxed">SequenceIQ is an analytical tracking tool. Martingale staking strategies carry significant risk. Always participate within your means and never chase losses.</p></div></div>
+    </div>
+    <div class="flex items-center justify-between flex-wrap gap-4"><div class="flex items-center gap-3"><div class="w-7 h-7 rounded-lg flex items-center justify-center" style="background:linear-gradient(135deg,var(--accent),var(--danger));"><i class="fa-solid fa-link text-black text-xs"></i></div><div class="text-xs text-[var(--muted)]"><span class="font-semibold text-[var(--fg-dim)]">SequenceIQ</span> · Chain sequence intelligence</div></div><div class="text-xs text-[var(--muted)]">Data stays in your browser</div></div>
+  </div>
+</footer>
+</div><!-- /main-wrap -->
+
+<div id="toastContainer" class="toast-container"></div>
+
+<div id="confirmModal" class="confirm-modal" onclick="closeConfirmModal(false)">
+  <div class="confirm-card" onclick="event.stopPropagation()">
+    <div class="confirm-header">
+      <div id="confirmModalIcon" class="confirm-icon"><i class="fa-solid fa-circle-exclamation"></i></div>
+      <div>
+        <div id="confirmModalTitle" class="confirm-title">Confirm action</div>
+        <div id="confirmModalHeading" class="confirm-heading">Are you sure?</div>
+        <div id="confirmModalMessage" class="confirm-text">This action cannot be undone.</div>
+      </div>
+    </div>
+    <div class="confirm-actions">
+      <button type="button" onclick="closeConfirmModal(false)" class="btn-secondary py-3 px-4 rounded-xl text-sm">Cancel</button>
+      <button type="button" id="confirmModalPrimaryBtn" onclick="confirmModalConfirm()" class="btn-danger py-3 px-4 rounded-xl text-sm">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- Sequence Details Modal -->
+<div id="seqDetailsModal" class="fixed inset-0 z-[60] hidden items-center justify-center p-4 modal-backdrop">
+  <div class="glass-strong rounded-2xl p-6 max-w-3xl w-full max-h-[85vh] overflow-y-auto" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between mb-1">
+      <h3 class="display-font text-xl font-bold">Sequence Details</h3>
+      <div class="flex items-center gap-2">
+        <button id="sdContinueBtn" onclick="continueFromModal()" class="btn-ghost px-3 py-1.5 rounded-lg text-xs items-center gap-1.5 text-[var(--success)]" style="display:none;"><i class="fa-solid fa-forward text-[10px]"></i> Continue</button>
+        <button id="sdDeleteBtn" onclick="deleteSequenceFromModal()" class="btn-ghost px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5 text-[var(--danger)]"><i class="fa-solid fa-trash text-[10px]"></i> Delete Sequence</button>
+        <button onclick="closeSeqDetails()" class="btn-ghost w-8 h-8 rounded-lg flex items-center justify-center"><i class="fa-solid fa-xmark text-sm"></i></button>
+      </div>
+    </div>
+    <div id="sdRootId" class="text-xs text-[var(--muted)] mb-4 mt-1"></div>
+    <div id="sdContent"></div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div id="settingsModal" class="fixed inset-0 z-[60] hidden items-center justify-center p-4 modal-backdrop">
+  <div class="glass-strong rounded-2xl p-6 max-w-md w-full" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between mb-5"><h3 class="display-font text-xl font-bold">Settings</h3><button onclick="closeSettings()" class="btn-ghost w-8 h-8 rounded-lg flex items-center justify-center"><i class="fa-solid fa-xmark text-sm"></i></button></div>
+    <div class="space-y-4">
+      <div><label class="text-xs text-[var(--muted)] uppercase tracking-wider mb-2 block">Max Branches (B1-Bn)</label><input type="number" id="maxBranchesInput" value="9" min="1" max="20" class="w-full px-3 py-2.5 rounded-lg text-sm"></div>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="importFileInput" accept=".json" class="hidden">
+
+<script>
+// ============== STATE ==============
+const state = {
+  config: { rootBet: 22, odds: 1.95, profitTarget: 15, maxBranches: 9 },
+  activeSession: null,
+  history: [], // Flat array of individual entries
+  sessionTimer: null,
+  sessionStartTime: null,
+  currentPage: 'new-entry',
+  forceNewEntry: false,
+  expandedRoots: {},
+  liveMatches: [],
+  activeSport: 'cricket'
+};
+let neSelectedTeam = null;
+let neTeam1Val = '';
+let neTeam2Val = '';
+let openDropdownId = null;
+let currentModalSeqId = null;
+let cumulativeChart = null;
+let branchChart = null;
+
+// ============== CORE MATH ==============
+function calculateChain(rootBet, odds, target, maxBranches) {
+  const chain = [{ label: 'R0', name: 'Root Entry', amount: rootBet, cumulativeLossBefore: 0, profitIfWin: parseFloat((rootBet * (odds - 1)).toFixed(2)) }];
+  let cl = rootBet;
+  for (let i = 1; i <= maxBranches; i++) {
+    const a = (cl + target) / (odds - 1);
+    chain.push({ label: `B${i}`, name: `Branch ${i}`, amount: parseFloat(a.toFixed(2)), cumulativeLossBefore: parseFloat(cl.toFixed(2)), profitIfWin: parseFloat((a * (odds - 1) - cl).toFixed(2)) });
+    cl += a;
+  }
+  return chain;
+}
+function extendChain(chain, cfg) {
+  const maxAdd = 60;
+  for (let added = 0; added < maxAdd; added++) {
+    const i = chain.length;
+    let cl = 0; for (let j = 0; j < i; j++) cl += chain[j].amount;
+    const a = (cl + cfg.profitTarget) / (cfg.odds - 1);
+    chain.push({ label: `B${i}`, name: `Branch ${i}`, amount: parseFloat(a.toFixed(2)), cumulativeLossBefore: parseFloat(cl.toFixed(2)), profitIfWin: parseFloat((a * (cfg.odds - 1) - cl).toFixed(2)) });
+  }
+  return chain;
+}
+function getTotalExposure(chain) { return chain.reduce((s, n) => s + n.amount, 0); }
+function getBranchIndex(b) { return b === 'R0' ? 0 : (parseInt(b.replace('B', '')) || 0); }
+
+// ============== UTILITIES ==============
+function genId() { return 'E-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5); }
+function genSeqId() { let id, a = 0; do { id = `SEQ-${Math.floor(10000 + Math.random() * 90000)}`; a++; } while (state.history.some(e => getEntryRootId(e) === id) && a < 1000); return id; }
+function genBranchSeqId(rootId) { const base = (rootId || 'BR').replace(/[^A-Za-z0-9]/g, '').slice(0, 6).toUpperCase(); const suffix = String(Math.floor(1000 + Math.random() * 9000)); return `${base ? base + '-' : 'BR-'}${suffix}`; }
+function normalizeBranchSeqId(value) {
+  const cleaned = (value || '').toString().trim().toUpperCase().replace(/^BR-?/,'').replace(/\D+/g, '');
+  return cleaned ? `BR-${cleaned}` : '';
+}
+function normalizeBranchSeqInput() {
+  const input = document.getElementById('neBranchSeqId');
+  if (!input) return;
+  const normalized = normalizeBranchSeqId(input.value);
+  input.value = normalized;
+}
+function fmtTime(d) { if (!d) return '—'; const dt = d instanceof Date ? d : new Date(d); return dt.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }); }
+function fmtDate(s) { if (!s) return '—'; return new Date(s).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
+function fmtCur(v) { const n = parseFloat(v) || 0; return (n >= 0 ? '' : '-') + 'NRs. ' + Math.abs(n).toFixed(2); }
+
+function normalizeHistoryEntry(entry, fallbackRootId = null) { 
+  const branchLabel = entry.branch || (entry.isRoot ? 'R0' : 'B1');
+  const branchNumber = typeof entry.branchNumber === 'number' ? entry.branchNumber : (branchLabel === 'R0' || entry.isRoot ? 0 : getBranchIndex(branchLabel));
+  const rootId = entry.rootSequenceId || entry.parentSequence || entry.sequenceId || fallbackRootId || '';
+  const branchSeqId = entry.branchSequenceId || (branchLabel === 'R0' ? rootId : null);
+  return {
+    ...entry,
+    id: entry.id || genId(),
+    sequenceId: rootId || entry.sequenceId || '',
+    rootSequenceId: rootId || entry.sequenceId || '',
+    branchSequenceId: branchSeqId || entry.sequenceId || '',
+    parentSequence: entry.parentSequence || rootId || entry.sequenceId || '',
+    branch: branchLabel,
+    branchNumber,
+    isRoot: entry.isRoot || branchLabel === 'R0' || branchNumber === 0,
+    result: entry.result || 'pending',
+    picked: entry.picked || null,
+    timeEntry: entry.timeEntry || '—',
+    date: entry.date || new Date().toISOString(),
+    config: entry.config || {}
+  };
+}
+function getEntryRootId(entry) { return entry && (entry.rootSequenceId || entry.parentSequence || entry.sequenceId || ''); }
+function getEntryBranchSeqId(entry) { return entry && (entry.branchSequenceId || (entry.isRoot ? getEntryRootId(entry) : entry.sequenceId) || ''); }
+function validateBranchSeqId(value, rootId, ignoreId = null) {
+  const trimmed = (value || '').trim().toUpperCase();
+  if (!trimmed) return { valid: false, reason: 'Enter a branch sequence ID' };
+  if (!/^BR-\d+$/.test(trimmed)) return { valid: false, reason: 'Branch ID must be in the format BR-xxxxx' };
+  if (trimmed === rootId.toUpperCase()) return { valid: false, reason: 'Branch ID must differ from root sequence ID' };
+  const duplicate = state.history.some(e => {
+    const existingId = (getEntryBranchSeqId(e) || '').toUpperCase();
+    return existingId && existingId === trimmed && (!ignoreId || getEntryBranchSeqId(e).toUpperCase() !== ignoreId.toUpperCase());
+  });
+  if (duplicate) return { valid: false, reason: 'Branch sequence ID already exists' };
+  return { valid: true, value: trimmed };
+}
+
+function getEntriesForSeq(seqId) {
+  return state.history.filter(e => getEntryRootId(e) === seqId || e.sequenceId === seqId || getEntryBranchSeqId(e) === seqId)
+    .sort((a, b) => getBranchIndex(a.branch) - getBranchIndex(b.branch));
+}
+
+function findPendingEntries() {
+  return state.history.filter(e => e.result === 'pending');
+}
+
+function renderPending() {
+  const pendingEntries = findPendingEntries();
+  const pendingCount = pendingEntries.length;
+  const pendingStake = pendingEntries.reduce((sum, e) => sum + (e.stake || 0), 0);
+  const pendingSeqIds = [...new Set(pendingEntries.map(e => getEntryRootId(e) || e.sequenceId || ''))].filter(id => id);
+
+  document.getElementById('pendingCount').textContent = pendingCount;
+  document.getElementById('pendingStake').textContent = fmtCur(pendingStake);
+  document.getElementById('pendingSequences').textContent = pendingSeqIds.length;
+
+  const list = document.getElementById('pendingList');
+  if (pendingCount === 0) {
+    list.innerHTML = `<div class="glass rounded-2xl p-8 text-center text-[var(--muted)]">No pending entries found. All good!</div>`;
+    return;
+  }
+
+  list.innerHTML = pendingEntries.map(entry => {
+    const rootId = getEntryRootId(entry) || entry.sequenceId || '—';
+    const branchId = getEntryBranchSeqId(entry) || entry.branchSequenceId || entry.branch || '—';
+    const pickedName = entry.picked === 'team1' ? (entry.team1 || 'Team 1') : entry.picked === 'team2' ? (entry.team2 || 'Team 2') : '—';
+    const dateLabel = fmtDate(entry.date || '') + ' ' + (entry.timeEntry || '');
+    return `
+      <div class="glass rounded-2xl p-5 border border-white/10">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-2 mb-2">
+              <span class="badge badge-pending"><i class="fa-solid fa-clock text-[9px]"></i> Pending</span>
+              <span class="mono text-sm font-semibold text-[var(--accent-2)]">${rootId}</span>
+              <span class="text-[11px] text-[var(--muted)]">${branchId}</span>
+            </div>
+            <div class="text-sm font-semibold text-[var(--fg)] mb-1">${entry.team1 || 'Team 1'} vs ${entry.team2 || 'Team 2'}</div>
+            <div class="text-[12px] text-[var(--muted)] flex flex-wrap gap-3">
+              <span>Pick: <span class="text-[var(--fg)]">${pickedName}</span></span>
+              <span>Stake: <span class="mono">${fmtCur(entry.stake)}</span></span>
+              <span>Date: <span class="mono">${dateLabel}</span></span>
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="applyPendingResult('${entry.id}','win')" class="btn-success py-2 px-3 rounded-xl text-xs font-semibold">Win</button>
+            <button onclick="applyPendingResult('${entry.id}','loss')" class="btn-danger py-2 px-3 rounded-xl text-xs font-semibold">Loss</button>
+            <button onclick="applyPendingResult('${entry.id}','postponed')" class="btn-ghost py-2 px-3 rounded-xl text-xs font-semibold">Postpone</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function applyPendingResult(entryId, result) {
+  const entry = state.history.find(e => e.id === entryId);
+  if (!entry) return;
+  entry.result = result;
+  saveState();
+  renderPending();
+  renderHistory();
+  updateDashboardStats();
+  updateAnalytics();
+  if (result === 'win') showToast('Entry marked as Win.', 'success');
+  else if (result === 'loss') showToast('Entry marked as Loss.', 'danger');
+  else showToast('Entry postponed successfully.', 'neutral');
+}
+
+function isChainBreak(seqId) { const es = getEntriesForSeq(seqId); return es.length > 0 && !es.some(e => e.result === 'win') && es.some(e => e.result === 'loss'); }
+function isLastLossOfBreak(entry) { if (entry.result !== 'loss') return false; const es = getEntriesForSeq(getEntryRootId(entry) || entry.sequenceId); if (es.some(e => e.result === 'win')) return false; return es[es.length - 1].id === entry.id; }
+
+// ============== STORAGE ==============
+function saveState() { try { localStorage.setItem('sequenceiq_v2', JSON.stringify({ config: state.config, activeSession: state.activeSession, history: state.history })); } catch(e) {} }
+function loadState() {
+  try {
+    let saved = localStorage.getItem('sequenceiq_v2');
+    if (saved) {
+      const d = JSON.parse(saved);
+      state.config = { ...state.config, ...(d.config || {}) };
+      state.activeSession = d.activeSession || null;
+      state.history = (d.history || []).map(e => normalizeHistoryEntry(e, e.sequenceId || null));
+      return;
+    }
+    saved = localStorage.getItem('sequenceiq_state');
+    if (saved) {
+      const d = JSON.parse(saved);
+      state.config = { ...state.config, ...(d.config || {}) };
+      state.activeSession = null;
+      state.history = [];
+      (d.history || []).forEach(s => {
+        const cfg = s.config || d.config || state.config;
+        (s.steps || []).forEach(step => {
+          const rootId = s.sequenceId || genSeqId();
+          const branchLabel = step.branch || 'R0';
+          const normalized = normalizeHistoryEntry({
+            id: genId(),
+            sequenceId: rootId,
+            rootSequenceId: rootId,
+            branchSequenceId: branchLabel === 'R0' ? rootId : genBranchSeqId(rootId),
+            parentSequence: rootId,
+            branch: branchLabel,
+            isRoot: branchLabel === 'R0',
+            branchNumber: branchLabel === 'R0' ? 0 : getBranchIndex(branchLabel),
+            team1: step.team1 || '—',
+            team2: step.team2 || '—',
+            picked: step.picked || null,
+            result: step.result || 'pending',
+            stake: step.amount || 0,
+            timeEntry: step.timeEntry || '—',
+            date: s.date || new Date().toISOString(),
+            config: { ...cfg }
+          }, rootId);
+          state.history.push(normalized);
+        });
+      });
+      saveState();
+      localStorage.removeItem('sequenceiq_state');
+    }
+  } catch(e) { console.error('Load error', e); }
+}
+
+// ============== TOAST ==============
+function showToast(msg, type) {
+  const c = document.getElementById('toastContainer');
+  const normalizedType = type || 'neutral';
+  const config = {
+    success: { icon: 'fa-check-circle', title: 'Success' },
+    danger: { icon: 'fa-circle-exclamation', title: 'Error' },
+    warning: { icon: 'fa-triangle-exclamation', title: 'Warning' },
+    neutral: { icon: 'fa-circle-info', title: 'Notice' }
+  };
+  const cfg = config[normalizedType] || config.neutral;
+  const t = document.createElement('div');
+  t.className = 'toast-card';
+  t.dataset.type = normalizedType;
+  t.setAttribute('role', 'status');
+  t.setAttribute('aria-live', 'polite');
+
+  const icon = document.createElement('div');
+  icon.className = 'toast-icon';
+  icon.innerHTML = `<i class="fa-solid ${cfg.icon}"></i>`;
+
+  const content = document.createElement('div');
+  content.className = 'toast-content';
+
+  const title = document.createElement('div');
+  title.className = 'toast-title';
+  title.textContent = cfg.title;
+
+  const message = document.createElement('div');
+  message.className = 'toast-message';
+  message.textContent = msg;
+
+  content.appendChild(title);
+  content.appendChild(message);
+
+  const progress = document.createElement('div');
+  progress.className = 'toast-progress';
+
+  t.appendChild(icon);
+  t.appendChild(content);
+  t.appendChild(progress);
+  c.appendChild(t);
+
+  requestAnimationFrame(() => t.classList.add('show'));
+
+  const hideTimer = setTimeout(() => {
+    t.classList.add('removing');
+    setTimeout(() => t.remove(), 280);
+  }, 3200);
+
+  t.addEventListener('click', () => {
+    clearTimeout(hideTimer);
+    t.classList.add('removing');
+    setTimeout(() => t.remove(), 220);
+  });
+}
+
+let confirmModalResolver = null;
+function showConfirm(options) {
+  return new Promise(resolve => {
+    const modal = document.getElementById('confirmModal');
+    const icon = document.getElementById('confirmModalIcon');
+    const title = document.getElementById('confirmModalTitle');
+    const heading = document.getElementById('confirmModalHeading');
+    const message = document.getElementById('confirmModalMessage');
+    const primaryBtn = document.getElementById('confirmModalPrimaryBtn');
+
+    title.textContent = options.title || 'Confirm action';
+    heading.textContent = options.heading || 'Are you sure?';
+    message.textContent = options.message || 'This action cannot be undone.';
+    primaryBtn.textContent = options.confirmText || 'Confirm';
+
+    const iconName = options.icon || 'fa-circle-exclamation';
+    icon.innerHTML = `<i class="fa-solid ${iconName}"></i>`;
+    if (options.type === 'danger') {
+      icon.style.background = 'rgba(244,63,94,0.14)';
+      icon.style.color = 'var(--danger)';
+    } else if (options.type === 'success') {
+      icon.style.background = 'rgba(16,185,129,0.14)';
+      icon.style.color = 'var(--success)';
+    } else if (options.type === 'warning') {
+      icon.style.background = 'rgba(245,158,11,0.14)';
+      icon.style.color = 'var(--accent-2)';
+    } else {
+      icon.style.background = 'rgba(245,158,11,0.14)';
+      icon.style.color = 'var(--accent-2)';
+    }
+
+    confirmModalResolver = resolve;
+    modal.classList.add('active');
+  });
+}
+
+function closeConfirmModal(result) {
+  const modal = document.getElementById('confirmModal');
+  modal.classList.remove('active');
+  if (confirmModalResolver) {
+    confirmModalResolver(!!result);
+    confirmModalResolver = null;
+  }
+}
+
+function confirmModalConfirm() {
+  closeConfirmModal(true);
+}
+
+// ============== NAVIGATION ==============
+function navigateTo(page) {
+  state.currentPage = page;
+  document.querySelectorAll('.page-section').forEach(s => s.classList.add('hidden'));
+  const el = document.getElementById('page-' + page);
+  if (el) el.classList.remove('hidden');
+  document.querySelectorAll('.sidebar-item[data-page]').forEach(i => i.classList.toggle('active', i.dataset.page === page));
+  if (page === 'history') renderHistory();
+  if (page === 'analytics') updateAnalytics();
+  if (page === 'dashboard') updateDashboardStats();
+  if (page === 'active-session') updateActiveSessionUI();
+  if (page === 'pending') renderPending();
+  if (page === 'new-entry') { state.forceNewEntry = false; updateNewEntryUI(); }
+  if (page === 'chain') updateChainPage();
+  if (page === 'live') loadLiveMatches();
+  closeMobileMenu();
+  window.scrollTo(0, 0);
+}
+function toggleMobileMenu() {
+  document.getElementById('sidebar').classList.toggle('mob-open');
+  document.getElementById('mobileOverlay').classList.toggle('active');
+}
+function closeMobileMenu() {
+  document.getElementById('sidebar').classList.remove('mob-open');
+  document.getElementById('mobileOverlay').classList.remove('active');
+}
+
+// ============== LIVE MATCHES ==============
+function normalizeLiveMatch(item) {
+  if (!item) return null;
+
+  const isLive = String(item.ms || '').toLowerCase() === 'live' || /live/i.test(item.status || '');
+  const type = isLive ? 'live' : 'upcoming';
+  const typeLabel = isLive ? 'Live' : 'Upcoming';
+  const team1 = item.t1 || 'Team 1';
+  const team2 = item.t2 || 'Team 2';
+  const scoreText = [item.t1s, item.t2s].filter(Boolean).join(' / ') || item.status || 'No score yet';
+  const startText = item.dateTimeGMT ? new Date(item.dateTimeGMT).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : 'TBD';
+  const matchTitle = `${team1} vs ${team2}`;
+  const tossWinner = item.tossWinner || item.toss_winner || item.tossWinnerTeam || 'Not provided by this API';
+  const matchType = (item.matchType || 'Cricket').toUpperCase();
+  const series = item.series || 'Cricket';
+  const status = item.status || (isLive ? 'Live' : 'Upcoming');
+
+  return {
+    id: item.id || `${matchTitle}-${type}`,
+    sport: 'cricket',
+    title: matchTitle,
+    type,
+    typeLabel,
+    matchType,
+    series,
+    team1,
+    team2,
+    scoreText,
+    status,
+    startText,
+    tossWinner,
+    date: item.dateTimeGMT || ''
+  };
+}
+
+function normalizeFootballMatch(item, teamName) {
+  if (!item) return null;
+
+  const participants = Array.isArray(item.participants) ? item.participants : [];
+  const home = participants.find(p => p.meta?.location === 'home' || p.type === 'home')?.name || participants[0]?.name || 'Home';
+  const away = participants.find(p => p.meta?.location === 'away' || p.type === 'away')?.name || participants[1]?.name || 'Away';
+  const league = item.league?.name || item.league_name || item.league?.data?.name || 'League';
+  const venue = item.venue?.name || item.venue_name || 'Venue pending';
+  const startText = item.starting_at ? new Date(item.starting_at).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : 'TBD';
+  const status = item.status || 'Upcoming';
+  const title = `${home} vs ${away}`;
+
+  return {
+    id: item.id || `${title}-${status}`,
+    sport: 'football',
+    title,
+    type: 'upcoming',
+    typeLabel: 'Upcoming',
+    matchType: 'FOOTBALL',
+    series: league,
+    team1: home,
+    team2: away,
+    scoreText: status,
+    status,
+    startText,
+    tossWinner: teamName ? `Related team: ${teamName}` : 'Team context from API',
+    venue,
+    date: item.starting_at || ''
+  };
+}
+
+function renderLiveMatches() {
+  const list = document.getElementById('liveMatchesList');
+  const status = document.getElementById('liveStatus');
+  const selectedSport = document.getElementById('liveSportSelect')?.value || state.activeSport || 'cricket';
+  state.activeSport = selectedSport;
+  if (!list || !status) return;
+
+  if (!state.liveMatches.length) {
+    list.innerHTML = `<div class="glass rounded-xl p-6 text-center text-[var(--muted)]">No ${selectedSport} matches were returned. Try refreshing in a moment.</div>`;
+    status.textContent = 'No data';
+    status.className = 'badge badge-neutral';
+    return;
+  }
+
+  if (selectedSport === 'football') {
+    list.innerHTML = state.liveMatches.map(match => `
+      <div class="glass rounded-2xl p-5 border border-white/10">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div>
+            <div class="text-[10px] uppercase tracking-[0.2em] text-[var(--muted)]">${match.matchType} · ${match.series}</div>
+            <div class="font-semibold text-sm">${match.title}</div>
+          </div>
+          <span class="badge badge-accent">${match.typeLabel}</span>
+        </div>
+        <div class="grid gap-3 md:grid-cols-[1fr_auto_1fr] items-center">
+          <div class="glass rounded-xl p-3">
+            <div class="text-[10px] uppercase tracking-[0.2em] text-[var(--muted)] mb-1">Home</div>
+            <div class="font-semibold">${match.team1}</div>
+          </div>
+          <div class="text-center text-[var(--muted)] font-semibold">VS</div>
+          <div class="glass rounded-xl p-3">
+            <div class="text-[10px] uppercase tracking-[0.2em] text-[var(--muted)] mb-1">Away</div>
+            <div class="font-semibold">${match.team2}</div>
+          </div>
+        </div>
+        <div class="grid gap-3 mt-4 md:grid-cols-2">
+          <div class="glass rounded-xl p-3">
+            <div class="text-[10px] uppercase tracking-[0.2em] text-[var(--muted)] mb-1">Kick-off</div>
+            <div class="font-semibold text-sm">${match.startText}</div>
+          </div>
+          <div class="glass rounded-xl p-3">
+            <div class="text-[10px] uppercase tracking-[0.2em] text-[var(--muted)] mb-1">Status</div>
+            <div class="font-semibold text-sm">${match.status}</div>
+          </div>
+          <div class="glass rounded-xl p-3">
+            <div class="text-[10px] uppercase tracking-[0.2em] text-[var(--muted)] mb-1">Venue</div>
+            <div class="font-semibold text-sm">${match.venue || 'Pending'}</div>
+          </div>
+          <div class="glass rounded-xl p-3">
+            <div class="text-[10px] uppercase tracking-[0.2em] text-[var(--muted)] mb-1">Context</div>
+            <div class="font-semibold text-sm">${match.tossWinner}</div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  } else {
+    list.innerHTML = state.liveMatches.map(match => `
+      <div class="glass rounded-2xl p-5 border border-white/10">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div>
+            <div class="text-[10px] uppercase tracking-[0.2em] text-[var(--muted)]">${match.matchType} · ${match.series}</div>
+            <div class="font-semibold text-sm">${match.title}</div>
+          </div>
+          <span class="badge ${match.type === 'live' ? 'badge-success' : 'badge-accent'}">${match.typeLabel}</span>
+        </div>
+        <div class="grid gap-3 md:grid-cols-[1fr_auto_1fr] items-center">
+          <div class="glass rounded-xl p-3">
+            <div class="text-[10px] uppercase tracking-[0.2em] text-[var(--muted)] mb-1">Team 1</div>
+            <div class="font-semibold">${match.team1}</div>
+          </div>
+          <div class="text-center text-[var(--muted)] font-semibold">VS</div>
+          <div class="glass rounded-xl p-3">
+            <div class="text-[10px] uppercase tracking-[0.2em] text-[var(--muted)] mb-1">Team 2</div>
+            <div class="font-semibold">${match.team2}</div>
+          </div>
+        </div>
+        <div class="grid gap-3 mt-4 md:grid-cols-2">
+          <div class="glass rounded-xl p-3">
+            <div class="text-[10px] uppercase tracking-[0.2em] text-[var(--muted)] mb-1">Start Time</div>
+            <div class="font-semibold text-sm">${match.startText}</div>
+          </div>
+          <div class="glass rounded-xl p-3">
+            <div class="text-[10px] uppercase tracking-[0.2em] text-[var(--muted)] mb-1">Status</div>
+            <div class="font-semibold text-sm">${match.status}</div>
+          </div>
+          <div class="glass rounded-xl p-3">
+            <div class="text-[10px] uppercase tracking-[0.2em] text-[var(--muted)] mb-1">Toss / Info</div>
+            <div class="font-semibold text-sm">${match.tossWinner}</div>
+          </div>
+          <div class="glass rounded-xl p-3">
+            <div class="text-[10px] uppercase tracking-[0.2em] text-[var(--muted)] mb-1">Score</div>
+            <div class="font-semibold text-sm">${match.scoreText}</div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+  status.textContent = `${state.liveMatches.length} match${state.liveMatches.length === 1 ? '' : 'es'} shown`;
+  status.className = 'badge badge-accent';
+}
+
+function loadLiveMatches() {
+  const list = document.getElementById('liveMatchesList');
+  const status = document.getElementById('liveStatus');
+  const selectedSport = document.getElementById('liveSportSelect')?.value || state.activeSport || 'cricket';
+  state.activeSport = selectedSport;
+  if (!list || !status) return;
+
+  list.innerHTML = `<div class="glass rounded-xl p-6 text-center text-[var(--muted)]">Fetching ${selectedSport === 'football' ? 'football' : 'cricket'} matches…</div>`;
+  status.textContent = 'Loading…';
+  status.className = 'badge badge-pending';
+
+  if (selectedSport === 'football') {
+    fetch('https://api.sportmonks.com/v3/football/teams/85?api_token=YuTbBhrd90KmNks2hdkap32wNdtyXSGq5AU6ADurIFJR1OshNsNRDZVDTco0&include=upcoming.participants;upcoming.league')
+      .then(res => res.json())
+      .then(result => {
+        const teamName = result?.data?.team?.name || 'Team';
+        const upcoming = Array.isArray(result?.data?.upcoming) ? result.data.upcoming : [];
+        const matches = upcoming.map(item => normalizeFootballMatch(item, teamName)).filter(Boolean);
+        state.liveMatches = matches.slice(0, 8);
+        renderLiveMatches();
+      })
+      .catch(() => {
+        state.liveMatches = [];
+        renderLiveMatches();
+        status.textContent = 'API unavailable';
+        status.className = 'badge badge-danger';
+        if (list) {
+          list.innerHTML = `<div class="glass rounded-xl p-6 text-center text-[var(--muted)]">The football API could not be reached. Please try again shortly.</div>`;
+        }
+      });
+    return;
+  }
+
+  fetch('https://api.cricapi.com/v1/cricScore?apikey=482ab14e-e261-4a7c-9b22-afcb1440672f')
+    .then(res => res.json())
+    .then(result => {
+      const matches = (result?.data || []).map(item => normalizeLiveMatch(item)).filter(Boolean);
+      state.liveMatches = matches.slice(0, 12);
+      renderLiveMatches();
+    })
+    .catch(() => {
+      state.liveMatches = [];
+      renderLiveMatches();
+      status.textContent = 'API unavailable';
+      status.className = 'badge badge-danger';
+      if (list) {
+        list.innerHTML = `<div class="glass rounded-xl p-6 text-center text-[var(--muted)]">The cricket API could not be reached. Please try again shortly.</div>`;
+      }
+    });
+}
+
+function renderChain(containerId, chain, session) {
+  const c = document.getElementById(containerId);
+  if (!c) return;
+  let html = '';
+  chain.forEach((node, i) => {
+    let cls = 'future';
+    if (session) {
+      if (i < session.currentStep) {
+        const sd = getEntriesForSeq(session.sequenceId).find(s => s.branch === node.label);
+        cls = sd ? (sd.result === 'win' ? 'won' : sd.result === 'postponed' ? 'future' : 'lost') : 'lost';
+      } else if (i === session.currentStep) cls = 'current';
+    }
+    if (i > 0) html += `<div class="connector-line ${session && i <= session.currentStep ? 'active' : ''}"></div>`;
+    html += `<div class="chain-node ${cls}"><div class="pulse-ring"></div><div class="node-card glass rounded-xl p-3 w-[72px] text-center"><div class="node-label text-[10px] font-bold uppercase tracking-wider mb-1">${node.label}</div><div class="node-amount mono text-xs font-semibold">NRs. ${node.amount.toFixed(0)}</div></div></div>`;
+  });
+  c.innerHTML = html;
+}
+
+// ============== NEW ENTRY ==============
+function updateNewEntryUI() {
+  const chain = calculateChain(state.config.rootBet, state.config.odds, state.config.profitTarget, state.config.maxBranches);
+  document.getElementById('neChainSummary').textContent = `+${state.config.profitTarget} Profit Model @ ${state.config.odds}X odds`;
+  document.getElementById('neChainExposure').textContent = fmtCur(getTotalExposure(chain));
+  document.getElementById('neExposure').textContent = fmtCur(getTotalExposure(chain));
+  renderChain('neChainContainer', chain, state.activeSession);
+
+  // Config fields
+  document.getElementById('neRootBet').value = state.config.rootBet;
+  document.getElementById('neOdds').value = state.config.odds;
+  document.getElementById('neProfit').value = state.config.profitTarget;
+  document.querySelectorAll('#neProfitBtns button').forEach(b => b.classList.toggle('active', parseInt(b.dataset.profit) === state.config.profitTarget));
+
+  const as = state.activeSession;
+  const forceNew = state.forceNewEntry;
+  if (as && !forceNew) {
+    document.getElementById('neFormTitle').textContent = 'Continue Sequence';
+    document.getElementById('neForceNewLink').classList.remove('hidden');
+    document.getElementById('neSeqId').value = as.sequenceId;
+    document.getElementById('neSeqId').readOnly = true;
+    document.getElementById('neSeqId').style.opacity = '0.6';
+    document.getElementById('neRegenBtn').style.display = 'none';
+    const step = as.chain[as.currentStep];
+    const isRootEntry = step.label === 'R0';
+    const branchWrap = document.getElementById('neBranchSeqIdWrap');
+    const branchInput = document.getElementById('neBranchSeqId');
+    if (isRootEntry) {
+      branchWrap.classList.add('hidden');
+      branchInput.value = '';
+    } else {
+      branchWrap.classList.remove('hidden');
+      branchInput.value = as.branchSeqId || '';
+      branchInput.readOnly = false;
+      branchInput.style.opacity = '1';
+    }
+    document.getElementById('neBranchLabel').textContent = step.label;
+    document.getElementById('neBranchInfo').textContent = `Continuing at ${step.label} — ${step.name}`;
+    document.getElementById('neStakeDisplay').textContent = fmtCur(step.amount);
+    document.getElementById('neCumLossDisplay').textContent = fmtCur(step.cumulativeLossBefore);
+    document.getElementById('neProfitDisplay').textContent = '+' + fmtCur(step.profitIfWin);
+    // Check for existing pending entry
+    const existing = state.history.find(e => e.sequenceId === as.sequenceId && e.branch === step.label && (e.result === 'pending' || e.result === 'postponed'));
+    if (existing) {
+      neTeam1Val = existing.team1 || '';
+      neTeam2Val = existing.team2 || '';
+      neSelectedTeam = existing.picked || null;
+      document.getElementById('neCreateBtnText').textContent = 'Update Entry';
+    } else {
+      neTeam1Val = ''; neTeam2Val = ''; neSelectedTeam = null;
+      document.getElementById('neCreateBtnText').textContent = 'Create Entry';
+    }
+  } else {
+    document.getElementById('neFormTitle').textContent = 'New Sequence';
+    document.getElementById('neForceNewLink').classList.add('hidden');
+    document.getElementById('neSeqId').value = genSeqId();
+    document.getElementById('neSeqId').readOnly = false;
+    document.getElementById('neSeqId').style.opacity = '1';
+    document.getElementById('neRegenBtn').style.display = '';
+    document.getElementById('neBranchLabel').textContent = 'R0';
+    document.getElementById('neBranchSeqIdWrap').classList.add('hidden');
+    document.getElementById('neBranchSeqId').value = '';
+    document.getElementById('neBranchSeqId').readOnly = false;
+    document.getElementById('neBranchInfo').textContent = 'Starting at R0 — Root Entry';
+    document.getElementById('neStakeDisplay').textContent = fmtCur(chain[0].amount);
+    document.getElementById('neCumLossDisplay').textContent = 'NRs. 0.00';
+    document.getElementById('neProfitDisplay').textContent = '+' + fmtCur(chain[0].profitIfWin);
+    neTeam1Val = ''; neTeam2Val = ''; neSelectedTeam = null;
+    document.getElementById('neCreateBtnText').textContent = 'Create Entry';
+  }
+  document.getElementById('neTeam1').value = neTeam1Val;
+  document.getElementById('neTeam2').value = neTeam2Val;
+  document.getElementById('nePick1Name').textContent = neTeam1Val || 'Team 1';
+  document.getElementById('nePick2Name').textContent = neTeam2Val || 'Team 2';
+  updateNEPickUI();
+}
+
+function switchToNewEntryForm() {
+  state.forceNewEntry = true;
+  updateNewEntryUI();
+}
+
+function regenerateNESeqId() { document.getElementById('neSeqId').value = genSeqId(); }
+
+function neSelectTeam(t) { neSelectedTeam = t; updateNEPickUI(); }
+function updateNEPickUI() {
+  document.getElementById('nePick1').classList.toggle('active', neSelectedTeam === 'team1');
+  document.getElementById('nePick2').classList.toggle('active', neSelectedTeam === 'team2');
+  const d = document.getElementById('neSelectedDisplay');
+  if (neSelectedTeam === 'team1') { d.textContent = neTeam1Val || 'Team 1'; d.style.color = 'var(--accent-2)'; }
+  else if (neSelectedTeam === 'team2') { d.textContent = neTeam2Val || 'Team 2'; d.style.color = 'var(--accent-2)'; }
+  else { d.textContent = 'None'; d.style.color = 'var(--muted)'; }
+}
+
+function createEntry() {
+  const t1 = document.getElementById('neTeam1').value.trim();
+  const t2 = document.getElementById('neTeam2').value.trim();
+  const rootSeqId = (document.getElementById('neSeqId').value.trim() || genSeqId()).trim();
+  const branchSeqInput = normalizeBranchSeqId(document.getElementById('neBranchSeqId').value.trim());
+  if (!t1 || !t2) { showToast('Enter both team names', 'warning'); return; }
+  if (!neSelectedTeam) { showToast('Pick a team', 'warning'); return; }
+
+  if (!state.activeSession || state.forceNewEntry) {
+    if (state.sessionTimer) clearInterval(state.sessionTimer);
+    state.sessionTimer = null;
+    state.sessionStartTime = null;
+    const cfg = { ...state.config };
+    const chain = calculateChain(cfg.rootBet, cfg.odds, cfg.profitTarget, cfg.maxBranches);
+    state.activeSession = { sequenceId: rootSeqId, branchSeqId: '', config: cfg, chain, currentStep: 0, currentEntryId: null, startTime: Date.now() };
+    state.sessionStartTime = Date.now();
+    state.sessionTimer = setInterval(updateTimer, 1000);
+    state.forceNewEntry = false;
+  }
+
+  const as = state.activeSession;
+  const step = as.chain[as.currentStep];
+  const existing = state.history.find(e => getEntryRootId(e) === as.sequenceId && e.branch === step.label && (e.result === 'pending' || e.result === 'postponed'));
+  const isRootEntry = step.label === 'R0';
+
+  let branchValidation = { valid: true, value: rootSeqId };
+  if (!isRootEntry) {
+    const branchValue = branchSeqInput || step.label;
+    branchValidation = validateBranchSeqId(branchValue, rootSeqId, existing ? getEntryBranchSeqId(existing) : null);
+    if (!branchValidation.valid) { showToast(branchValidation.reason, 'warning'); return; }
+  }
+
+  const data = normalizeHistoryEntry({
+    id: existing ? existing.id : genId(),
+    sequenceId: as.sequenceId,
+    rootSequenceId: as.sequenceId,
+    branchSequenceId: branchValidation.value,
+    parentSequence: as.sequenceId,
+    branch: step.label,
+    branchNumber: step.label === 'R0' ? 0 : getBranchIndex(step.label),
+    isRoot: step.label === 'R0',
+    team1: t1,
+    team2: t2,
+    picked: neSelectedTeam,
+    result: 'pending',
+    stake: step.amount,
+    timeEntry: fmtTime(new Date()),
+    date: new Date().toISOString(),
+    config: { ...as.config }
+  }, as.sequenceId);
+
+  if (existing) { Object.assign(existing, data); as.currentEntryId = existing.id; }
+  else { state.history.unshift(data); as.currentEntryId = data.id; }
+
+  as.branchSeqId = branchValidation.value;
+  saveState();
+  navigateTo('pending');
+  showToast('Entry created at ' + step.label, 'success');
+}
+
+// ============== ACTIVE SESSION ==============
+function updateTimer() {
+  if (!state.sessionStartTime) return;
+  const e = Math.floor((Date.now() - state.sessionStartTime) / 1000);
+  document.getElementById('timerDisplay').textContent = `${String(Math.floor(e/3600)).padStart(2,'0')}:${String(Math.floor((e%3600)/60)).padStart(2,'0')}:${String(e%60).padStart(2,'0')}`;
+}
+
+function updateActiveSessionUI() {
+  const as = state.activeSession;
+  const emptyEl = document.getElementById('asEmpty');
+  const waitEl = document.getElementById('asWaiting');
+  const activeEl = document.getElementById('asActive');
+  const timerEl = document.getElementById('asTimer');
+
+  emptyEl.classList.add('hidden'); waitEl.classList.add('hidden'); activeEl.classList.add('hidden'); timerEl.classList.add('hidden');
+
+  if (!as) { emptyEl.classList.remove('hidden'); document.getElementById('statCurrent').textContent = 'IDLE'; document.getElementById('statCurrentSub').textContent = 'No active session'; return; }
+
+  timerEl.classList.remove('hidden');
+  const step = as.chain[as.currentStep];
+  const entry = state.history.find(e => e.id === as.currentEntryId);
+
+  if (!entry || entry.result === 'loss') {
+    // Waiting for next entry
+    waitEl.classList.remove('hidden');
+    document.getElementById('asWaitBranch').textContent = step.label;
+    document.getElementById('statCurrent').textContent = step.label;
+    document.getElementById('statCurrentSub').textContent = as.sequenceId + ' — awaiting entry';
+    return;
+  }
+
+  // Show active entry
+  activeEl.classList.remove('hidden');
+  const branchSeq = (as.branchSeqId || entry?.branchSequenceId || '').trim();
+  document.getElementById('asSeqId').innerHTML = `<div class="text-[var(--accent-2)]">${as.sequenceId}</div><div class="text-[10px] text-[var(--muted)] mt-1 mono">Branch: ${branchSeq || '—'}</div>`;
+  document.getElementById('asBranchBadge').textContent = step.label;
+  document.getElementById('asStake').textContent = fmtCur(step.amount);
+  document.getElementById('asCumLoss').textContent = fmtCur(step.cumulativeLossBefore);
+  document.getElementById('asProfit').textContent = '+' + fmtCur(step.profitIfWin);
+  document.getElementById('asTeam1').textContent = entry.team1 || '—';
+  document.getElementById('asTeam2').textContent = entry.team2 || '—';
+  const pickedName = entry.picked === 'team1' ? (entry.team1 || 'Team 1') : entry.picked === 'team2' ? (entry.team2 || 'Team 2') : 'None';
+  document.getElementById('asPicked').textContent = pickedName;
+  document.getElementById('statCurrent').textContent = step.label;
+  document.getElementById('statCurrentSub').textContent = as.sequenceId;
+}
+
+function recordWin() {
+  const as = state.activeSession; if (!as || !as.currentEntryId) return;
+  const entry = state.history.find(e => e.id === as.currentEntryId); if (!entry) return;
+  entry.result = 'win';
+  // Remove any entries after this branch in the same sequence
+  const bIdx = getBranchIndex(entry.branch);
+  state.history = state.history.filter(e => e.sequenceId !== as.sequenceId || getBranchIndex(e.branch) <= bIdx);
+  endSession();
+  showToast('Prediction won at ' + entry.branch + '! +' + fmtCur(as.config.profitTarget), 'success');
+}
+
+function recordLoss() {
+  const as = state.activeSession; if (!as || !as.currentEntryId) return;
+  const entry = state.history.find(e => e.id === as.currentEntryId); if (!entry) return;
+  entry.result = 'loss';
+  as.currentStep++;
+  while (as.chain.length <= as.currentStep) extendChain(as.chain, as.config);
+  as.currentEntryId = null;
+  saveState(); updateActiveSessionUI(); updateDashboardStats();
+  showToast('Loss recorded. Advanced to ' + as.chain[as.currentStep].label, 'danger');
+}
+
+function recordPending() {
+  const as = state.activeSession; if (!as || !as.currentEntryId) return;
+  const entry = state.history.find(e => e.id === as.currentEntryId); if (!entry) return;
+  entry.result = 'pending';
+  saveState(); updateActiveSessionUI();
+  showToast('Marked as Pending', 'neutral');
+}
+
+function resetSession() {
+  if (!state.activeSession) return;
+  clearInterval(state.sessionTimer);
+  state.activeSession = null;
+  saveState(); updateActiveSessionUI(); updateDashboardStats();
+  showToast('Succesfully saved to history', 'neutral');
+}
+
+function postponeActiveSession() {
+  if (state.sessionTimer) clearInterval(state.sessionTimer);
+  state.sessionTimer = null;
+  state.sessionStartTime = null;
+  state.activeSession = null;
+  saveState(); updateActiveSessionUI(); updateDashboardStats(); updateAnalytics();
+  navigateTo('new-entry');
+  showToast('Active session postponed. You can start a new entry from R0.', 'neutral');
+}
+
+function endSession() {
+  clearInterval(state.sessionTimer);
+  state.activeSession = null;
+  saveState(); updateActiveSessionUI(); updateDashboardStats(); updateAnalytics();
+}
+
+// ============== HISTORY ==============
+function renderHistory() {
+  const filter = document.getElementById('historyFilter').value;
+  const rootEntries = state.history.filter(e => e.isRoot || e.branch === 'R0').map(e => normalizeHistoryEntry(e, getEntryRootId(e) || e.sequenceId || '')).sort((a, b) => new Date(b.date) - new Date(a.date));
+  const filteredRoots = rootEntries.filter(root => {
+    if (filter === 'all') return true;
+    const rootId = getEntryRootId(root) || root.sequenceId || '';
+    return state.history.filter(e => (getEntryRootId(e) || e.sequenceId) === rootId).some(e => e.result === filter);
+  });
+
+  const tbody = document.getElementById('historyTableBody');
+  const emptyEl = document.getElementById('historyEmpty');
+  if (filteredRoots.length === 0) { tbody.innerHTML = ''; emptyEl.classList.remove('hidden'); return; }
+  emptyEl.classList.add('hidden');
+
+  let html = '';
+  filteredRoots.forEach(root => {
+    const rootId = getEntryRootId(root) || root.sequenceId || '';
+    const branches = state.history.filter(e => (getEntryRootId(e) || e.sequenceId) === rootId).sort((a, b) => getBranchIndex(a.branch) - getBranchIndex(b.branch));
+    const latestBranch = [...branches].reverse().find(e => e.result === 'pending' || e.result === 'postponed') || [...branches].reverse().find(e => e.result === 'loss') || branches[branches.length - 1];
+    const latestBranchId = latestBranch ? (getEntryBranchSeqId(latestBranch) || latestBranch.branch || '—') : '—';
+    const totalBranches = branches.filter(e => !e.isRoot && e.branch !== 'R0').length;
+    const isExpanded = !!state.expandedRoots[rootId];
+    const canContinue = !branches.some(e => e.result === 'win') && branches.some(e => e.result === 'loss' || e.result === 'postponed');
+    const status = branches.some(e => e.result === 'win') ? 'Completed' : (branches.some(e => e.result === 'loss') ? 'Active' : 'Pending');
+    const totalPL = branches.reduce((sum, e) => {
+      if (e.result === 'win') return sum + (e.config ? (e.config.profitTarget || 0) : (state.config.profitTarget || 0));
+      if (e.result === 'loss') return sum - (e.stake || 0);
+      return sum;
+    }, 0);
+
+    html += `<tr class="table-row border-b border-white/5">
+      <td colspan="10" class="px-0 py-0">
+        <div class="border-l-2 border-[var(--accent)]/40 bg-white/5">
+          <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+            <div class="flex items-center gap-2 flex-1 min-w-0">
+              <button type="button" onclick="toggleHistoryRoot('${rootId}')" class="w-7 h-7 rounded-md flex items-center justify-center text-[var(--muted)] hover:text-[var(--accent-2)] hover:bg-white/5 transition-all" title="Toggle Root">
+                <i class="fa-solid ${isExpanded ? 'fa-chevron-down' : 'fa-chevron-right'} text-[10px]"></i>
+              </button>
+              <div class="flex flex-col gap-1 min-w-0">
+                <div class="flex items-center gap-2">
+                  <span class="badge badge-root text-[9px] py-0 px-1.5"><i class="fa-solid fa-star text-[7px]"></i> Root</span>
+                  <span class="mono text-sm font-semibold text-[var(--accent-2)] truncate">${rootId}</span>
+                </div>
+                <div class="text-[11px] text-[var(--muted)] flex flex-wrap gap-3">
+                  <span>Latest Branch: <span class="mono text-[var(--fg-dim)]">${latestBranchId}</span></span>
+                  <span>Created: <span class="mono text-[var(--fg-dim)]">${fmtDate(root.date || branches[0]?.date || '')}</span></span>
+                  <span>Status: <span class="text-[var(--fg-dim)]">${status}</span></span>
+                  <span>Branches: <span class="mono text-[var(--fg-dim)]">${totalBranches}</span></span>
+                  <span>P/L: <span class="mono ${totalPL >= 0 ? 'text-[var(--success)]' : 'text-[var(--danger)]'}">${fmtCur(totalPL)}</span></span>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              ${canContinue ? `<button onclick="continueSequence('${rootId}')" class="btn-ghost px-2.5 py-1.5 rounded-lg text-[11px] flex items-center gap-1.5"><i class="fa-solid fa-forward text-[10px]"></i> Continue</button>` : ''}
+              <button onclick="openSeqDetails('${rootId}')" class="btn-ghost px-2.5 py-1.5 rounded-lg text-[11px]">View</button>
+            </div>
+          </div>
+          ${isExpanded ? `<div class="px-4 pb-3">
+            <div class="text-[10px] uppercase tracking-wider text-[var(--muted)] mb-2">Branch Entries</div>
+            <div class="space-y-2 border-l border-white/10 ml-2 pl-3">
+              ${branches.map(entry => {
+                const branchLabel = entry.isRoot || entry.branch === 'R0' ? 'Root Entry' : entry.branch;
+                const branchSeq = getEntryBranchSeqId(entry) || entry.sequenceId || '—';
+                const pickedName = entry.picked === 'team1' ? (entry.team1 || 'Team 1') : entry.picked === 'team2' ? (entry.team2 || 'Team 2') : '—';
+                return `<div class="flex flex-wrap items-start justify-between gap-3 rounded-lg border border-white/5 bg-black/15 px-3 py-2.5">
+                  <div class="flex items-start gap-2">
+                    <span class="text-[10px] text-[var(--muted)] mt-1">└</span>
+                    <div class="flex flex-col gap-1">
+                      <div class="flex items-center gap-2">
+                        <span class="mono text-xs font-semibold text-[var(--fg-dim)]">${branchLabel}</span>
+                        <span class="mono text-[11px] text-[var(--accent-2)]">${branchSeq}</span>
+                      </div>
+                      <div class="text-[11px] text-[var(--muted)] flex flex-wrap gap-3">
+                        <span>${entry.team1 || '—'} vs ${entry.team2 || '—'}</span>
+                        <span>Pick: <span class="text-[var(--fg-dim)]">${pickedName}</span></span>
+                        <span>Stake: <span class="mono text-[var(--fg-dim)]">${fmtCur(entry.stake)}</span></span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    ${getStepBadge(entry)}
+                    <button onclick="deleteEntry('${entry.id}','single')" class="w-7 h-7 rounded-md flex items-center justify-center text-[var(--muted)] hover:text-[var(--danger)] hover:bg-white/5 transition-all" title="Delete"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                  </div>
+                </div>`;
+              }).join('')}
+            </div>
+          </div>` : ''}
+        </div>
+      </td>
+    </tr>`;
+  });
+  tbody.innerHTML = html;
+}
+
+function toggleHistoryRoot(rootId) {
+  state.expandedRoots[rootId] = !state.expandedRoots[rootId];
+  renderHistory();
+}
+
+function getStepBadge(e) {
+  if (e.result === 'postponed') return `<span class="badge badge-refunded"><i class="fa-solid fa-rotate-left text-[9px]"></i> Refunded – ${fmtCur(e.stake)}</span>`;
+  switch (e.result) {
+    case 'win': return '<span class="badge badge-success"><i class="fa-solid fa-check text-[9px]"></i> Win</span>';
+    case 'loss': return '<span class="badge badge-danger"><i class="fa-solid fa-xmark text-[9px]"></i> Loss</span>';
+    case 'pending': return '<span class="badge badge-pending"><i class="fa-solid fa-clock text-[9px]"></i> Pending</span>';
+    default: return '<span class="badge badge-neutral">' + (e.result || '—') + '</span>';
+  }
+}
+
+// ============== SEQUENCE DETAILS MODAL ==============
+function openSeqDetails(seqId) {
+  currentModalSeqId = seqId;
+  const entries = getEntriesForSeq(seqId);
+  const first = entries[0];
+  if (!first) return;
+
+  const hasWin = entries.some(e => e.result === 'win');
+  const isBreak = entries.length > 0 && !hasWin && entries.some(e => e.result === 'loss');
+  const hasPending = entries.some(e => e.result === 'pending');
+  const resultLabel = hasWin ? 'Win' : (hasPending ? 'Pending' : (isBreak ? 'Chain Break' : 'Pending'));
+  const resultBadge = hasWin ? '<span class="badge badge-success"><i class="fa-solid fa-check text-[9px]"></i> Win</span>' : isBreak ? '<span class="badge badge-danger"><i class="fa-solid fa-xmark text-[9px]"></i> Chain Break</span>' : '<span class="badge badge-pending"><i class="fa-solid fa-clock text-[9px]"></i> Pending</span>';
+
+  const totalStaked = entries.filter(e => e.result !== 'postponed').reduce((s, e) => s + (e.stake || 0), 0);
+  const lossTotal = entries.filter(e => e.result === 'loss').reduce((s, e) => s + (e.stake || 0), 0);
+  const profit = hasWin ? (first.config ? first.config.profitTarget : state.config.profitTarget) : -lossTotal;
+  const profitColor = profit >= 0 ? 'var(--success)' : 'var(--danger)';
+  const rootId = getEntryRootId(first) || first.sequenceId || seqId;
+  const branchId = getEntryBranchSeqId(first) || first.branchSequenceId || first.sequenceId || '—';
+
+  document.getElementById('sdRootId').innerHTML = `Root Sequence ID: <span class="mono text-[var(--accent-2)] font-semibold">${rootId}</span> `;
+  document.getElementById('sdContinueBtn').style.display = isBreak ? 'flex' : 'none';
+  document.getElementById('sdDeleteBtn').style.display = 'flex';
+
+  let html = `<div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+    <div class="glass rounded-lg p-3"><div class="text-[10px] text-[var(--muted)] uppercase tracking-wider mb-1">Result</div><div>${resultBadge}</div></div>
+    <div class="glass rounded-lg p-3"><div class="text-[10px] text-[var(--muted)] uppercase tracking-wider mb-1">Profit</div><div class="mono font-bold text-sm" style="color:${profitColor};">${profit >= 0 ? '+' : ''}${fmtCur(profit)}</div></div>
+    <div class="glass rounded-lg p-3"><div class="text-[10px] text-[var(--muted)] uppercase tracking-wider mb-1">Total Staked</div><div class="mono font-bold text-sm">${fmtCur(totalStaked)}</div></div>
+    <div class="glass rounded-lg p-3"><div class="text-[10px] text-[var(--muted)] uppercase tracking-wider mb-1">Entries</div><div class="mono font-bold text-sm">${entries.length}</div></div>
+  </div>
+  <div class="text-xs text-[var(--muted)] uppercase tracking-widest mb-3">Sequence Entries</div>
+  <div class="overflow-x-auto"><table class="w-full text-xs"><thead><tr class="text-left text-[10px] text-[var(--muted)] uppercase tracking-wider border-b border-white/10">
+    <th class="px-3 py-2 font-medium">Time</th><th class="px-3 py-2 font-medium">Branch</th><th class="px-3 py-2 font-medium text-right">Stake</th><th class="px-3 py-2 font-medium">Root ID</th><th class="px-3 py-2 font-medium">Branch ID</th><th class="px-3 py-2 font-medium">Team 1</th><th class="px-3 py-2 font-medium">Team 2</th><th class="px-3 py-2 font-medium">Picked</th><th class="px-3 py-2 font-medium">Result</th><th class="px-3 py-2 font-medium w-10"></th>
+  </tr></thead><tbody>`;
+
+  entries.forEach(entry => {
+    const isR0 = entry.branch === 'R0';
+    const rootId = getEntryRootId(entry) || entry.sequenceId || seqId;
+    const branchId = getEntryBranchSeqId(entry) || entry.branchSequenceId || '—';
+    const pickedName = entry.picked === 'team1' ? (entry.team1 || 'Team 1') : entry.picked === 'team2' ? (entry.team2 || 'Team 2') : '—';
+    let branchCell;
+    if (isR0) {
+      branchCell = `<td class="px-3 py-2.5"><div class="flex items-center gap-1.5"><span class="mono font-bold text-[var(--fg)]">${entry.branch}</span><span class="badge badge-root text-[9px] py-0.5 px-1.5"><i class="fa-solid fa-star text-[7px]"></i></span></div></td>`;
+    } else {
+      branchCell = `<td class="px-3 py-2.5 mono font-bold text-[var(--fg-dim)]">${entry.branch}</td>`;
+    }
+    html += `<tr class="table-row border-b border-white/5">
+      <td class="px-3 py-2.5 mono text-[var(--muted)]">${entry.timeEntry}</td>
+      ${branchCell}
+      <td class="px-3 py-2.5 mono text-right font-semibold">${fmtCur(entry.stake)}</td>
+      <td class="px-3 py-2.5 text-[var(--fg-dim)] text-[10px] mono">${rootId}</td>
+      <td class="px-3 py-2.5 text-[var(--fg-dim)] text-[10px] mono">${branchId}</td>
+      <td class="px-3 py-2.5 text-[var(--fg-dim)]">${entry.team1}</td>
+      <td class="px-3 py-2.5 text-[var(--fg-dim)]">${entry.team2}</td>
+      <td class="px-3 py-2.5">${pickedName}</td>
+      <td class="px-3 py-2.5">${getStepBadge(entry)}</td>
+      <td class="px-3 py-2.5 text-right relative">
+        <div class="flex items-center justify-end gap-1">
+          <button onclick="toggleDropdown(event,'sd-${entry.id}')" class="w-7 h-7 rounded-md flex items-center justify-center text-[var(--muted)] hover:text-[var(--accent-2)] hover:bg-white/5 transition-all" title="Edit"><i class="fa-solid fa-pen text-[10px]"></i></button>
+          <button onclick="deleteEntry('${entry.id}','single')" class="w-7 h-7 rounded-md flex items-center justify-center text-[var(--muted)] hover:text-[var(--danger)] hover:bg-white/5 transition-all" title="Delete"><i class="fa-solid fa-trash text-[10px]"></i></button>
+          <div id="sd-${entry.id}" class="action-dropdown hidden">
+            <button onclick="editEntryModal('${entry.id}','win')"><span class="dot" style="background:var(--success);"></span> Win</button>
+            <button onclick="editEntryModal('${entry.id}','loss')"><span class="dot" style="background:var(--danger);"></span> Loss</button>
+            <button onclick="editEntryModal('${entry.id}','pending')"><span class="dot" style="background:#94a3b8;"></span> Pending</button>
+            <button onclick="editEntryModal('${entry.id}','postponed')"><span class="dot" style="background:var(--info);"></span> Postponed</button>
+          </div>
+        </div>
+      </td>
+    </tr>`;
+  });
+  if (entries.length === 0) html += '<tr><td colspan="10" class="text-center py-8 text-[var(--muted)]">No entries</td></tr>';
+  html += '</tbody></table></div>';
+  document.getElementById('sdContent').innerHTML = html;
+
+  const modal = document.getElementById('seqDetailsModal');
+  modal.classList.remove('hidden'); modal.classList.add('flex');
+}
+
+function closeSeqDetails() {
+  const m = document.getElementById('seqDetailsModal');
+  m.classList.add('hidden'); m.classList.remove('flex');
+  closeAllDropdowns(); currentModalSeqId = null;
+}
+
+function continueFromModal() { if (currentModalSeqId) continueSequence(currentModalSeqId); }
+function deleteSequenceFromModal() { if (currentModalSeqId) { deleteSequenceGroup(currentModalSeqId); closeSeqDetails(); } }
+
+// ============== DROPDOWNS ==============
+function toggleDropdown(event, id) {
+  event.stopPropagation();
+  const el = document.getElementById(id);
+  if (!el) return;
+  closeAllDropdowns();
+  el.classList.remove('hidden');
+  openDropdownId = id;
+}
+function closeAllDropdowns() {
+  document.querySelectorAll('.action-dropdown').forEach(el => el.classList.add('hidden'));
+  openDropdownId = null;
+}
+document.addEventListener('click', function(e) {
+  if (openDropdownId && !e.target.closest('.action-dropdown') && !e.target.closest('[onclick*="toggleDropdown"]')) closeAllDropdowns();
+});
+
+// ============== EDIT ENTRY ==============
+function editEntry(entryId, newResult) {
+  closeAllDropdowns();
+  const entry = state.history.find(e => e.id === entryId);
+  if (!entry) return;
+  const oldResult = entry.result;
+  entry.result = newResult;
+
+  // If editing the active session's current entry, update UI
+  if (state.activeSession && state.activeSession.currentEntryId === entryId) {
+    if (newResult === 'loss') {
+      state.activeSession.currentStep++;
+      while (state.activeSession.chain.length <= state.activeSession.currentStep) extendChain(state.activeSession.chain, state.activeSession.config);
+      state.activeSession.currentEntryId = null;
+    }
+  }
+
+  saveState(); refreshAll();
+  showToast('Result updated to ' + (newResult === 'postponed' ? 'Postponed (Refunded)' : newResult), 'neutral');
+}
+
+function editEntryModal(entryId, newResult) {
+  closeAllDropdowns();
+  editEntry(entryId, newResult);
+  if (currentModalSeqId) openSeqDetails(currentModalSeqId);
+}
+
+// ============== DELETE ENTRY ==============
+async function deleteEntry(entryId, mode) {
+  closeAllDropdowns();
+  if (mode === 'group') {
+    const entry = state.history.find(e => e.id === entryId);
+    if (!entry) return;
+    const confirmed = await showConfirm({
+      type: 'danger',
+      title: 'Delete sequence',
+      heading: 'Delete entire sequence?',
+      message: `Delete entire sequence "${entry.sequenceId}" and all its entries?`,
+      confirmText: 'Delete Sequence'
+    });
+    if (!confirmed) return;
+    deleteSequenceGroup(entry.sequenceId);
+  } else {
+    const confirmed = await showConfirm({
+      type: 'danger',
+      title: 'Delete entry',
+      heading: 'Delete this entry?',
+      message: 'This entry will be permanently removed.',
+      confirmText: 'Delete Entry'
+    });
+    if (!confirmed) return;
+    const entry = state.history.find(e => e.id === entryId);
+    if (!entry) return;
+    // If it's the active entry, clear it
+    if (state.activeSession && state.activeSession.currentEntryId === entryId) {
+      state.activeSession.currentEntryId = null;
+    }
+    state.history = state.history.filter(e => e.id !== entryId);
+    saveState(); refreshAll();
+    showToast('Entry deleted', 'danger');
+  }
+}
+
+function deleteSequenceGroup(seqId) {
+  if (state.activeSession && state.activeSession.sequenceId === seqId) {
+    clearInterval(state.sessionTimer);
+    state.activeSession = null;
+  }
+  state.history = state.history.filter(e => e.sequenceId !== seqId);
+  saveState(); refreshAll();
+  showToast('Sequence deleted', 'danger');
+}
+
+// ============== CONTINUE SEQUENCE ==============
+function continueSequence(seqId) {
+  const entries = getEntriesForSeq(seqId);
+  if (entries.length === 0) return;
+  const resumeEntry = [...entries].reverse().find(e => e.result === 'loss' || e.result === 'postponed');
+  if (!resumeEntry) return;
+
+  if (state.activeSession) {
+    clearInterval(state.sessionTimer);
+  }
+
+  const firstEntry = entries[0];
+  const cfg = firstEntry.config || { ...state.config };
+  const chain = calculateChain(cfg.rootBet, cfg.odds, cfg.profitTarget, cfg.maxBranches);
+  const resumeIdx = getBranchIndex(resumeEntry.branch) + 1;
+  while (chain.length <= resumeIdx) extendChain(chain, cfg);
+
+  state.activeSession = {
+    sequenceId: seqId,
+    branchSeqId: '',
+    config: cfg,
+    chain: chain,
+    currentStep: resumeIdx,
+    currentEntryId: null,
+    startTime: entries[0].date ? new Date(entries[0].date).getTime() : Date.now()
+  };
+
+  state.sessionStartTime = state.activeSession.startTime;
+  if (state.sessionTimer) clearInterval(state.sessionTimer);
+  state.sessionTimer = setInterval(updateTimer, 1000);
+
+  closeSeqDetails();
+  saveState();
+  navigateTo('new-entry');
+  showToast('Continuing sequence at ' + chain[resumeIdx].label, 'success');
+}
+
+// ============== DASHBOARD ==============
+function updateDashboardStats() {
+  const allEntries = state.history;
+  const wins = allEntries.filter(e => e.result === 'win').length;
+  const losses = allEntries.filter(e => e.result === 'loss').length;
+  const totalPL = allEntries.reduce((s, e) => {
+    if (e.result === 'win') return s + (e.config ? e.config.profitTarget : state.config.profitTarget);
+    if (e.result === 'loss') return s - (e.stake || 0);
+    return s;
+  }, 0);
+  const winRate = (wins + losses) > 0 ? ((wins / (wins + losses)) * 100) : 0;
+
+  const plEl = document.getElementById('statNetPL');
+  plEl.textContent = fmtCur(totalPL);
+  plEl.style.color = totalPL >= 0 ? 'var(--success)' : 'var(--danger)';
+  document.getElementById('statNetPLSub').textContent = totalPL >= 0 ? `+${fmtCur(totalPL)} profit` : fmtCur(Math.abs(totalPL)) + ' loss';
+  document.getElementById('statWinRate').textContent = winRate.toFixed(0) + '%';
+  document.getElementById('statWinRateSub').textContent = `${wins}W / ${losses}L`;
+  document.getElementById('statEntries').textContent = allEntries.length;
+  document.getElementById('statEntriesSub').textContent = 'Total recorded';
+}
+
+// ============== CHAIN PAGE ==============
+function updateChainPage() {
+  const chain = calculateChain(state.config.rootBet, state.config.odds, state.config.profitTarget, state.config.maxBranches);
+  renderChain('chainPageContainer', chain, state.activeSession);
+  updateRiskAnalyzer(chain);
+}
+
+function updateRiskAnalyzer(chain) {
+  const ip = 1 / state.config.odds;
+  const lp = 1 - ip;
+  document.getElementById('impliedProb').textContent = (ip * 100).toFixed(2) + '%';
+  document.getElementById('impliedProb2').textContent = (ip * 100).toFixed(2) + '%';
+  document.getElementById('breakEvenWinRate').textContent = (ip * 100).toFixed(2) + '%';
+  document.getElementById('houseEdge').textContent = ((1 - ip * state.config.odds) * 100).toFixed(2) + '%';
+  document.getElementById('profitMargin').textContent = '+' + state.config.profitTarget.toFixed(2);
+  document.getElementById('bankrollRequired').textContent = getTotalExposure(chain).toFixed(2);
+  let ac = 0;
+  for (let i = 0; i < chain.length; i++) { ac += chain[i].amount * Math.pow(lp, i) * ip; if (i < chain.length - 1) ac += chain[i].amount * Math.pow(lp, i + 1); }
+  document.getElementById('avgChainCost').textContent = ac.toFixed(2);
+  const sc = document.getElementById('streakProbabilities');
+  let sh = '';
+  for (let i = 1; i <= 5; i++) {
+    const p = Math.pow(lp, i) * 100;
+    const c = p > 20 ? 'var(--danger)' : p > 5 ? 'var(--accent)' : 'var(--success)';
+    sh += `<div class="flex items-center justify-between text-xs"><span class="text-[var(--muted)]">${i} loss${i>1?'es':''}</span><div class="flex items-center gap-2"><div class="w-16 h-1.5 rounded-full bg-white/5 overflow-hidden"><div class="h-full rounded-full" style="width:${Math.min(p*3,100)}%;background:${c};"></div></div><span class="mono font-semibold w-12 text-right" style="color:${c};">${p.toFixed(2)}%</span></div></div>`;
+  }
+  sc.innerHTML = sh;
+}
+
+// ============== ANALYTICS ==============
+function updateAnalytics() {
+  updateCumulativeChart();
+  updateBranchChart();
+  updateTeamAnalytics();
+  updateMetrics();
+}
+
+function updateCumulativeChart() {
+  const ctx = document.getElementById('cumulativeChart');
+  if (!ctx) return;
+  // Group by sequence, compute cumulative P/L per sequence in chronological order
+  const seqMap = {};
+  state.history.forEach(e => {
+    if (!seqMap[e.sequenceId]) seqMap[e.sequenceId] = { entries: [], date: e.date, config: e.config };
+    seqMap[e.sequenceId].entries.push(e);
+  });
+  const seqs = Object.values(seqMap).sort((a, b) => new Date(a.date) - new Date(b.date));
+  let cum = 0;
+  const labels = [], data = [], colors = [];
+  seqs.forEach(s => {
+    const hasWin = s.entries.some(e => e.result === 'win');
+    const lossTotal = s.entries.filter(e => e.result === 'loss').reduce((sum, e) => sum + (e.stake || 0), 0);
+    const pl = hasWin ? (s.config ? s.config.profitTarget : state.config.profitTarget) : -lossTotal;
+    cum += pl;
+    labels.push(s.entries[0].sequenceId);
+    data.push(parseFloat(cum.toFixed(2)));
+    colors.push(cum >= 0 ? 'rgba(16,185,129,0.8)' : 'rgba(244,63,94,0.8)');
+  });
+  if (cumulativeChart) cumulativeChart.destroy();
+  cumulativeChart = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets: [{ data, borderColor: function(context) { return context.raw >= 0 ? 'rgba(16,185,129,1)' : 'rgba(244,63,94,1)'; }, backgroundColor: function(context) { const chart = context.chart; const {ctx: c, chartArea} = chart; if (!chartArea) return 'transparent'; const g = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom); g.addColorStop(0, 'rgba(16,185,129,0.15)'); g.addColorStop(1, 'transparent'); return g; }, fill: true, tension: 0.3, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: colors, borderWidth: 2 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 10, family: 'JetBrains Mono' }, maxRotation: 45 } }, y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 10, family: 'JetBrains Mono' }, callback: v => 'NRs. ' + v } } } }
+  });
+}
+
+function updateBranchChart() {
+  const ctx = document.getElementById('branchChart');
+  if (!ctx) return;
+  const chain = calculateChain(state.config.rootBet, state.config.odds, state.config.profitTarget, state.config.maxBranches);
+  const labels = chain.map(n => n.label);
+  const counts = labels.map(l => state.history.filter(e => e.branch === l && e.result === 'win').length);
+  if (branchChart) branchChart.destroy();
+  branchChart = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets: [{ data: counts, backgroundColor: labels.map((_, i) => i === 0 ? 'rgba(245,158,11,0.6)' : 'rgba(6,182,212,0.5)'), borderColor: labels.map((_, i) => i === 0 ? 'rgba(245,158,11,1)' : 'rgba(6,182,212,1)'), borderWidth: 1, borderRadius: 4 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 10, family: 'JetBrains Mono' } } }, y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 10, family: 'JetBrains Mono' }, stepSize: 1 }, beginAtZero: true } } }
+  });
+}
+
+function updateTeamAnalytics() {
+  const tm = {};
+  let total = 0, wins = 0;
+  state.history.forEach(e => {
+    if (e.result === 'postponed') return;
+    ['team1', 'team2'].forEach((key, idx) => {
+      const name = e[key];
+      if (name && name !== '—') {
+        if (!tm[name]) tm[name] = { name, matches: 0, w: 0 };
+        tm[name].matches++; total++;
+        if (e.result === 'win' && e.picked === (idx === 0 ? 'team1' : 'team2')) { tm[name].w++; wins++; }
+      }
+    });
+  });
+  const teams = Object.values(tm).sort((a, b) => b.matches - a.matches);
+  document.getElementById('teamTotalMatches').textContent = total;
+  document.getElementById('teamUniqueTeams').textContent = teams.length;
+  document.getElementById('teamTotalWins').textContent = wins;
+  const el = document.getElementById('teamStatsList');
+  if (teams.length === 0) { el.innerHTML = '<div class="text-sm text-[var(--muted)] text-center py-8 col-span-2">No team data yet</div>'; return; }
+  el.innerHTML = teams.slice(0, 20).map(t => {
+    const r = t.matches > 0 ? ((t.w / t.matches) * 100).toFixed(0) : 0;
+    return `<div class="glass rounded-lg p-3 flex items-center justify-between"><div><div class="text-sm font-semibold">${t.name}</div><div class="text-[10px] text-[var(--muted)]">${t.matches} match${t.matches!==1?'es':''} · ${t.w} win${t.w!==1?'s':''}</div></div><div class="mono text-sm font-bold ${r>=50?'text-[var(--success)]':'text-[var(--danger)]'}">${r}%</div></div>`;
+  }).join('');
+}
+
+function updateMetrics() {
+  const seqMap = {};
+  state.history.forEach(e => { if (!seqMap[e.sequenceId]) seqMap[e.sequenceId] = []; seqMap[e.sequenceId].push(e); });
+  const seqs = Object.values(seqMap);
+  let best = 0, worst = 0, cs = 0, cls = 0;
+  const wb = [];
+  seqs.forEach(entries => {
+    const hasWin = entries.some(e => e.result === 'win');
+    const hasLoss = entries.some(e => e.result === 'loss');
+    if (hasWin) { cs++; cls = 0; if (cs > best) best = cs; const we = entries.find(e => e.result === 'win'); if (we) wb.push(getBranchIndex(we.branch)); }
+    else if (hasLoss) { cls++; cs = 0; if (cls > worst) worst = cls; }
+    else { cs = 0; cls = 0; }
+  });
+  document.getElementById('metricBestStreak').textContent = best;
+  document.getElementById('metricWorstStreak').textContent = worst;
+  document.getElementById('metricAvgBranch').textContent = wb.length > 0 ? (wb.reduce((a, b) => a + b, 0) / wb.length).toFixed(1) : '—';
+  document.getElementById('metricTotalWagered').textContent = 'NRs. ' + state.history.filter(e => e.result !== 'postponed').reduce((s, e) => s + (e.stake || 0), 0).toFixed(0);
+}
+
+// ============== REFRESH ALL ==============
+function refreshAll() {
+  updateDashboardStats();
+  updateActiveSessionUI();
+  updateNewEntryUI();
+  updateChainPage();
+  if (state.currentPage === 'history') renderHistory();
+  if (state.currentPage === 'analytics') updateAnalytics();
+}
+
+// ============== SETTINGS ==============
+function openSettings() { const m = document.getElementById('settingsModal'); m.classList.remove('hidden'); m.classList.add('flex'); }
+function closeSettings() { const m = document.getElementById('settingsModal'); m.classList.add('hidden'); m.classList.remove('flex'); }
+
+// ============== IMPORT / EXPORT / RESET ==============
+function exportData() {
+  const data = JSON.stringify({ config: state.config, activeSession: state.activeSession, history: state.history }, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `sequenceiq_export_${new Date().toISOString().slice(0, 10)}.json`; a.click();
+  URL.revokeObjectURL(url);
+  showToast('Data exported', 'success');
+}
+
+function importData() { document.getElementById('importFileInput').click(); }
+
+async function permanentReset() {
+  const confirmed = await showConfirm({
+    type: 'danger',
+    title: 'Permanent reset',
+    heading: 'Delete all data?',
+    message: 'This will permanently delete all stored data, including session history, sequences, analytics, and settings. This cannot be undone.',
+    confirmText: 'Reset App'
+  });
+  if (!confirmed) return;
+  clearInterval(state.sessionTimer);
+  state.config = { rootBet: 22, odds: 1.95, profitTarget: 15, maxBranches: 9 };
+  state.activeSession = null;
+  state.history = [];
+  try { localStorage.removeItem('sequenceiq_v2'); localStorage.removeItem('sequenceiq_state'); } catch (e) {}
+  refreshAll();
+  navigateTo('new-entry');
+  showToast('Application permanently reset', 'danger');
+}
+
+// ============== CONFIG LISTENERS ==============
+function setupConfigListeners() {
+  // New Entry profit model
+  document.querySelectorAll('#neProfitBtns button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.config.profitTarget = parseInt(btn.dataset.profit);
+      document.getElementById('neProfit').value = state.config.profitTarget;
+      saveState(); updateNewEntryUI(); updateChainPage();
+    });
+  });
+  document.getElementById('neRootBet').addEventListener('change', function () {
+    const v = parseFloat(this.value);
+    if (v > 0) { state.config.rootBet = v; saveState(); updateNewEntryUI(); updateChainPage(); }
+  });
+  document.getElementById('neOdds').addEventListener('change', function () {
+    const v = parseFloat(this.value);
+    if (v > 1) { state.config.odds = v; saveState(); updateNewEntryUI(); updateChainPage(); }
+  });
+  document.getElementById('neProfit').addEventListener('change', function () {
+    const v = parseFloat(this.value);
+    if (v > 0) {
+      state.config.profitTarget = v; saveState(); updateNewEntryUI(); updateChainPage();
+      document.querySelectorAll('#neProfitBtns button').forEach(b => b.classList.toggle('active', parseInt(b.dataset.profit) === v));
+    }
+  });
+  document.getElementById('maxBranchesInput').addEventListener('change', function () {
+    const v = parseInt(this.value);
+    if (v >= 1 && v <= 20) { state.config.maxBranches = v; saveState(); updateNewEntryUI(); updateChainPage(); }
+  });
+
+  // History filter
+  document.getElementById('historyFilter').addEventListener('change', renderHistory);
+  const liveSportSelect = document.getElementById('liveSportSelect');
+  if (liveSportSelect) liveSportSelect.addEventListener('change', loadLiveMatches);
+  document.getElementById('clearHistoryBtn').addEventListener('click', async () => {
+    if (state.history.length === 0) return;
+    const confirmed = await showConfirm({
+      type: 'warning',
+      title: 'Clear history',
+      heading: 'Clear all history?',
+      message: 'This will remove all recorded entries from history. This action cannot be undone.',
+      confirmText: 'Clear History'
+    });
+    if (!confirmed) return;
+    state.history = [];
+    if (state.activeSession) { clearInterval(state.sessionTimer); state.activeSession = null; }
+    saveState(); refreshAll();
+    showToast('History cleared', 'neutral');
+  });
+
+  // Import
+  document.getElementById('importFileInput').addEventListener('change', function (e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function (ev) {
+      try {
+        const d = JSON.parse(ev.target.result);
+        if (d.config) state.config = { ...state.config, ...d.config };
+        if (d.history) state.history = d.history.map(e => ({ ...e, result: e.result || 'pending', picked: e.picked || null, timeEntry: e.timeEntry || '—' }));
+        if (d.activeSession) state.activeSession = d.activeSession;
+        saveState(); refreshAll();
+        showToast('Data imported successfully', 'success');
+      } catch (err) { showToast('Invalid file format', 'danger'); }
+    };
+    reader.readAsText(file);
+    this.value = '';
+  });
+
+  // Modals
+  document.getElementById('settingsModal').addEventListener('click', closeSettings);
+  document.getElementById('seqDetailsModal').addEventListener('click', closeSeqDetails);
+}
+
+// ============== KEYBOARD SHORTCUTS ==============
+document.addEventListener('keydown', function (e) {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'w' || e.key === 'W') { e.preventDefault(); recordWin(); }
+  else if (e.key === 'l' || e.key === 'L') { e.preventDefault(); recordLoss(); }
+  else if (e.key === 'f' || e.key === 'F') { e.preventDefault(); recordPending(); }
+  else if (e.key === 'Escape') { closeSettings(); closeSeqDetails(); closeAllDropdowns(); closeMobileMenu(); }
+});
+
+// ============== INIT ==============
+function init() {
+  loadState();
+  setupConfigListeners();
+  refreshAll();
+  loadLiveMatches();
+  navigateTo(state.activeSession ? 'active-session' : 'new-entry');
+
+  // Resume timer
+  if (state.activeSession && state.activeSession.startTime) {
+    state.sessionStartTime = state.activeSession.startTime;
+    state.sessionTimer = setInterval(updateTimer, 1000);
+  }
+}
+
+init();
+</script>
+</body>
+</html>
