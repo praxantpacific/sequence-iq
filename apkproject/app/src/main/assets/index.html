@@ -22,6 +22,8 @@ body{background:var(--bg);color:var(--fg);font-family:'DM Sans',sans-serif;margi
 .chain-node.current{transform:translateY(-6px)}
 .chain-node.current .node-card{background:linear-gradient(135deg,rgba(245,158,11,0.18),rgba(245,158,11,0.06));border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 12px 40px var(--accent-glow),inset 0 1px 0 rgba(255,255,255,0.1)}
 .chain-node.current .node-label{color:var(--accent)}
+.chain-node.active-branch .node-card{background:linear-gradient(135deg,rgba(251,191,36,0.2),rgba(251,191,36,0.08));border-color:rgba(251,191,36,0.6);box-shadow:0 0 0 2px rgba(251,191,36,0.4),0 0 24px rgba(251,191,36,0.5),inset 0 1px 0 rgba(255,255,255,0.1)}
+.chain-node.active-branch .node-label{color:var(--accent-2)}
 .chain-node.lost .node-card{opacity:.45;background:linear-gradient(135deg,rgba(244,63,94,0.08),rgba(244,63,94,0.02));border-color:rgba(244,63,94,0.3)}
 .chain-node.lost .node-amount{color:var(--danger);text-decoration:line-through;text-decoration-color:rgba(244,63,94,0.6)}
 .chain-node.won .node-card{background:linear-gradient(135deg,rgba(16,185,129,0.18),rgba(16,185,129,0.04));border-color:var(--success);box-shadow:0 0 0 1px var(--success),0 12px 40px var(--success-glow)}
@@ -77,6 +79,14 @@ input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appear
 .confirm-actions .btn-danger{min-width:140px}
 ::-webkit-scrollbar{height:10px;width:10px}::-webkit-scrollbar-track{background:rgba(0,0,0,0.2);border-radius:5px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:5px}::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.2)}
 .gradient-text{background:linear-gradient(135deg,#fbbf24 0%,#f59e0b 50%,#f43f5e 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+#loadingScreen{position:fixed;inset:0;z-index:999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;opacity:1;transition:opacity .5s ease-in-out;pointer-events:auto}#loadingScreen.hidden{opacity:0;pointer-events:none}
+.loading-logo{width:80px;height:80px;border-radius:20px;display:flex;align-items:center;justify-content:center;margin-bottom:40px;animation:logo-fade-in .6s ease-out}@keyframes logo-fade-in{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+.loading-logo i{font-size:40px;color:#000}
+.loading-content{text-align:center;margin-bottom:60px}
+.loading-title{font-family:'Bricolage Grotesque',sans-serif;font-size:32px;font-weight:800;letter-spacing:-.02em;margin:0 0 8px;color:var(--fg);animation:title-fade-in .7s ease-out .15s both}@keyframes title-fade-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.loading-subtitle{font-size:15px;color:var(--muted);letter-spacing:.015em;margin:0;animation:subtitle-fade-in .7s ease-out .3s both}@keyframes subtitle-fade-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.loading-progress{width:120px;height:3px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden;position:relative}
+.loading-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2));border-radius:2px;animation:loading-animate 1.8s ease-in-out infinite;width:30%}
 .stat-card{position:relative;overflow:hidden}.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.5}
 @keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}.pulse-dot{animation:pulse-dot 2s ease-in-out infinite}
 .connector-line{flex:1;min-width:24px;height:2px;background:linear-gradient(90deg,var(--border-strong),var(--border));position:relative;margin-top:32px}
@@ -93,6 +103,7 @@ input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appear
 .badge-refunded{background:rgba(6,182,212,0.12);color:var(--info);border:1px solid rgba(6,182,212,0.25)}
 .number-glow{text-shadow:0 0 20px currentColor}
 @keyframes float-slow{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}.float-slow{animation:float-slow 6s ease-in-out infinite}
+@keyframes loading-animate{0%{transform:translateX(-100%)}100%{transform:translateX(400%)}}
 .hero-orb{position:absolute;border-radius:50%;filter:blur(60px);opacity:.4;pointer-events:none;z-index:0}
 details>summary{list-style:none;cursor:pointer}details>summary::-webkit-details-marker{display:none}details[open] .chevron{transform:rotate(180deg)}.chevron{transition:transform .2s}
 @keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}.pulse-dot{animation:pulse-dot 2s ease-in-out infinite}
@@ -112,14 +123,17 @@ details>summary{list-style:none;cursor:pointer}details>summary::-webkit-details-
 .page-section.hidden{display:none}
 
 /* Mobile */
-#mobileMenuBtn{display:none}
+#mobileTopBar{display:none;position:fixed;top:0;left:0;z-index:56;flex-direction:column;align-items:flex-start;gap:10px;padding:14px}
+#mobileMenuBtn{display:flex}
 #mobileOverlay{display:none}
 @media(max-width:767px){
   #sidebar{transform:translateX(-100%);width:var(--sidebar-exp)}
   #sidebar.mob-open{transform:translateX(0)}
   #sidebar.mob-open .sidebar-label{opacity:1}
-  .main-wrap{margin-left:0}
-  #mobileMenuBtn{display:flex}
+  #sidebar.mob-open > div:first-child{opacity:0;pointer-events:none}
+  #sidebar.mob-open nav{padding-top:64px}
+  .main-wrap{margin-left:0;padding-top:118px}
+  #mobileTopBar{display:flex}
   #mobileOverlay.active{display:block;position:fixed;inset:0;z-index:45;background:rgba(0,0,0,0.5)}
 }
 
@@ -132,10 +146,32 @@ details>summary{list-style:none;cursor:pointer}details>summary::-webkit-details-
 <body>
 <div class="grid-bg"></div>
 
-<!-- Mobile Menu Button -->
-<button id="mobileMenuBtn" onclick="toggleMobileMenu()" class="fixed top-4 left-4 z-[55] btn-ghost w-10 h-10 rounded-lg items-center justify-center">
-  <i class="fa-solid fa-bars"></i>
-</button>
+<!-- Loading Screen -->
+<div id="loadingScreen">
+  <div class="loading-logo" style="background:linear-gradient(135deg,var(--accent),var(--danger));">
+    <i class="fa-solid fa-link text-black text-sm"></i>
+  </div>
+  <div class="loading-content">
+    <h1 class="loading-title">Sequence Intelligence</h1>
+    <p class="loading-subtitle">Sports Analytics Tracker</p>
+  </div>
+  <div class="loading-progress">
+    <div class="loading-bar"></div>
+  </div>
+</div>
+
+<!-- Mobile Top Bar: Logo + Menu Button (stacked so nothing overlaps page content) -->
+<div id="mobileTopBar">
+  <div class="flex items-center gap-2">
+    <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:linear-gradient(135deg,var(--accent),var(--danger));">
+      <i class="fa-solid fa-link text-black text-sm"></i>
+    </div>
+    <div class="display-font font-bold text-sm leading-none">Sequence<span class="gradient-text">IQ</span></div>
+  </div>
+  <button id="mobileMenuBtn" onclick="toggleMobileMenu()" class="btn-ghost w-9 h-9 rounded-lg items-center justify-center">
+    <i class="fa-solid fa-bars"></i>
+  </button>
+</div>
 <div id="mobileOverlay" onclick="toggleMobileMenu()"></div>
 
 <!-- Sidebar -->
@@ -153,7 +189,6 @@ details>summary{list-style:none;cursor:pointer}details>summary::-webkit-details-
   <nav class="flex flex-col gap-0.5 flex-1 py-1 overflow-y-auto">
     <button class="sidebar-item active" data-page="new-entry" onclick="navigateTo('new-entry')"><i class="fa-solid fa-file-circle-plus"></i><span class="sidebar-label">New Entry</span></button>
     <button class="sidebar-item" data-page="dashboard" onclick="navigateTo('dashboard')"><i class="fa-solid fa-gauge-high"></i><span class="sidebar-label">Dashboard</span></button>
-    <button class="sidebar-item" data-page="live" onclick="navigateTo('live')"><i class="fa-solid fa-satellite-dish"></i><span class="sidebar-label">Live</span></button>
     <button class="sidebar-item" data-page="chain" onclick="navigateTo('chain')"><i class="fa-solid fa-link"></i><span class="sidebar-label">Chain</span></button>
     <button class="sidebar-item" data-page="active-session" onclick="navigateTo('active-session')"><i class="fa-solid fa-bolt"></i><span class="sidebar-label">Active Session</span></button>
     <button class="sidebar-item" data-page="pending" onclick="navigateTo('pending')"><i class="fa-solid fa-clock"></i><span class="sidebar-label">Pending</span></button>
@@ -268,38 +303,6 @@ details>summary{list-style:none;cursor:pointer}details>summary::-webkit-details-
         <div class="stat-card glass rounded-2xl p-5"><div class="flex items-center justify-between mb-3"><span class="text-xs text-[var(--muted)] uppercase tracking-wider">Win Rate</span><div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:rgba(245,158,11,0.1);"><i class="fa-solid fa-trophy text-[var(--accent)] text-sm"></i></div></div><div id="statWinRate" class="display-font text-3xl font-bold mono">0%</div><div id="statWinRateSub" class="text-xs text-[var(--muted)] mt-1">0W / 0L</div></div>
         <div class="stat-card glass rounded-2xl p-5"><div class="flex items-center justify-between mb-3"><span class="text-xs text-[var(--muted)] uppercase tracking-wider">Entries</span><div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:rgba(6,182,212,0.1);"><i class="fa-solid fa-layer-group text-[var(--info)] text-sm"></i></div></div><div id="statEntries" class="display-font text-3xl font-bold mono">0</div><div id="statEntriesSub" class="text-xs text-[var(--muted)] mt-1">Total recorded</div></div>
         <div class="stat-card glass rounded-2xl p-5"><div class="flex items-center justify-between mb-3"><span class="text-xs text-[var(--muted)] uppercase tracking-wider">Current</span><div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:rgba(244,63,94,0.1);"><i class="fa-solid fa-location-crosshairs text-[var(--danger)] text-sm"></i></div></div><div id="statCurrent" class="display-font text-3xl font-bold mono">IDLE</div><div id="statCurrentSub" class="text-xs text-[var(--muted)] mt-1">No active session</div></div>
-      </div>
-    </div>
-  </section>
-</div>
-
-<!-- ====== LIVE PAGE ====== -->
-<div id="page-live" class="page-section hidden">
-  <section class="px-4 md:px-6 pt-6 md:pt-8 pb-8">
-    <div class="max-w-[1400px] mx-auto">
-      <div class="flex items-center justify-between mb-4 gap-4 flex-wrap">
-        <div>
-          <div class="flex items-center gap-2 mb-1"><span class="badge badge-accent"><span class="w-1.5 h-1.5 rounded-full bg-current pulse-dot"></span> LIVE MATCHES</span></div>
-          <h1 class="display-font text-3xl md:text-4xl font-bold">Live</h1>
-          <p class="text-sm text-[var(--muted)] mt-1">View live or upcoming Cricket or Football match details from the selected API.</p>
-        </div>
-        <div class="flex items-center gap-2">
-          <select id="liveSportSelect" class="px-3 py-2 rounded-lg text-sm" onchange="loadLiveMatches()">
-            <option value="cricket">Cricket</option>
-            <option value="football">Football</option>
-          </select>
-          <button onclick="loadLiveMatches()" class="btn-ghost px-3 py-2 rounded-xl text-sm inline-flex items-center gap-2"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
-        </div>
-      </div>
-      <div class="glass-strong rounded-2xl p-5 md:p-6">
-        <div class="flex items-center justify-between gap-3 mb-4 flex-wrap">
-          <div>
-            <h2 class="display-font text-xl font-bold">Matches</h2>
-            <p class="text-sm text-[var(--muted)] mt-1">Relevant live or upcoming stats from the selected sport source.</p>
-          </div>
-          <span id="liveStatus" class="badge badge-neutral">Loading…</span>
-        </div>
-        <div id="liveMatchesList" class="grid gap-3"></div>
       </div>
     </div>
   </section>
@@ -550,9 +553,7 @@ const state = {
   sessionStartTime: null,
   currentPage: 'new-entry',
   forceNewEntry: false,
-  expandedRoots: {},
-  liveMatches: [],
-  activeSport: 'cricket'
+  expandedRoots: {}
 };
 let neSelectedTeam = null;
 let neTeam1Val = '';
@@ -707,8 +708,8 @@ function applyPendingResult(entryId, result) {
   renderHistory();
   updateDashboardStats();
   updateAnalytics();
-  if (result === 'win') showToast('Entry marked as Win.', 'success');
-  else if (result === 'loss') showToast('Entry marked as Loss.', 'danger');
+  if (result === 'win') { showToast('Entry marked as Win.', 'success'); navigateTo('new-entry'); return; }
+  else if (result === 'loss') { showToast('Entry marked as Loss.', 'danger'); navigateTo('history'); return; }
   else showToast('Entry postponed successfully.', 'neutral');
 }
 
@@ -771,7 +772,7 @@ function showToast(msg, type) {
   const normalizedType = type || 'neutral';
   const config = {
     success: { icon: 'fa-check-circle', title: 'Success' },
-    danger: { icon: 'fa-circle-exclamation', title: 'Error' },
+    danger: { icon: 'fa-circle-exclamation', title: 'Alert' },
     warning: { icon: 'fa-triangle-exclamation', title: 'Warning' },
     neutral: { icon: 'fa-circle-info', title: 'Notice' }
   };
@@ -885,7 +886,6 @@ function navigateTo(page) {
   if (page === 'pending') renderPending();
   if (page === 'new-entry') { state.forceNewEntry = false; updateNewEntryUI(); }
   if (page === 'chain') updateChainPage();
-  if (page === 'live') loadLiveMatches();
   closeMobileMenu();
   window.scrollTo(0, 0);
 }
@@ -898,238 +898,24 @@ function closeMobileMenu() {
   document.getElementById('mobileOverlay').classList.remove('active');
 }
 
-// ============== LIVE MATCHES ==============
-function normalizeLiveMatch(item) {
-  if (!item) return null;
-
-  const isLive = String(item.ms || '').toLowerCase() === 'live' || /live/i.test(item.status || '');
-  const type = isLive ? 'live' : 'upcoming';
-  const typeLabel = isLive ? 'Live' : 'Upcoming';
-  const team1 = item.t1 || 'Team 1';
-  const team2 = item.t2 || 'Team 2';
-  const scoreText = [item.t1s, item.t2s].filter(Boolean).join(' / ') || item.status || 'No score yet';
-  const startText = item.dateTimeGMT ? new Date(item.dateTimeGMT).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : 'TBD';
-  const matchTitle = `${team1} vs ${team2}`;
-  const tossWinner = item.tossWinner || item.toss_winner || item.tossWinnerTeam || 'Not provided by this API';
-  const matchType = (item.matchType || 'Cricket').toUpperCase();
-  const series = item.series || 'Cricket';
-  const status = item.status || (isLive ? 'Live' : 'Upcoming');
-
-  return {
-    id: item.id || `${matchTitle}-${type}`,
-    sport: 'cricket',
-    title: matchTitle,
-    type,
-    typeLabel,
-    matchType,
-    series,
-    team1,
-    team2,
-    scoreText,
-    status,
-    startText,
-    tossWinner,
-    date: item.dateTimeGMT || ''
-  };
-}
-
-function normalizeFootballMatch(item, teamName) {
-  if (!item) return null;
-
-  const participants = Array.isArray(item.participants) ? item.participants : [];
-  const home = participants.find(p => p.meta?.location === 'home' || p.type === 'home')?.name || participants[0]?.name || 'Home';
-  const away = participants.find(p => p.meta?.location === 'away' || p.type === 'away')?.name || participants[1]?.name || 'Away';
-  const league = item.league?.name || item.league_name || item.league?.data?.name || 'League';
-  const venue = item.venue?.name || item.venue_name || 'Venue pending';
-  const startText = item.starting_at ? new Date(item.starting_at).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : 'TBD';
-  const status = item.status || 'Upcoming';
-  const title = `${home} vs ${away}`;
-
-  return {
-    id: item.id || `${title}-${status}`,
-    sport: 'football',
-    title,
-    type: 'upcoming',
-    typeLabel: 'Upcoming',
-    matchType: 'FOOTBALL',
-    series: league,
-    team1: home,
-    team2: away,
-    scoreText: status,
-    status,
-    startText,
-    tossWinner: teamName ? `Related team: ${teamName}` : 'Team context from API',
-    venue,
-    date: item.starting_at || ''
-  };
-}
-
-function renderLiveMatches() {
-  const list = document.getElementById('liveMatchesList');
-  const status = document.getElementById('liveStatus');
-  const selectedSport = document.getElementById('liveSportSelect')?.value || state.activeSport || 'cricket';
-  state.activeSport = selectedSport;
-  if (!list || !status) return;
-
-  if (!state.liveMatches.length) {
-    list.innerHTML = `<div class="glass rounded-xl p-6 text-center text-[var(--muted)]">No ${selectedSport} matches were returned. Try refreshing in a moment.</div>`;
-    status.textContent = 'No data';
-    status.className = 'badge badge-neutral';
-    return;
-  }
-
-  if (selectedSport === 'football') {
-    list.innerHTML = state.liveMatches.map(match => `
-      <div class="glass rounded-2xl p-5 border border-white/10">
-        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
-          <div>
-            <div class="text-[10px] uppercase tracking-[0.2em] text-[var(--muted)]">${match.matchType} · ${match.series}</div>
-            <div class="font-semibold text-sm">${match.title}</div>
-          </div>
-          <span class="badge badge-accent">${match.typeLabel}</span>
-        </div>
-        <div class="grid gap-3 md:grid-cols-[1fr_auto_1fr] items-center">
-          <div class="glass rounded-xl p-3">
-            <div class="text-[10px] uppercase tracking-[0.2em] text-[var(--muted)] mb-1">Home</div>
-            <div class="font-semibold">${match.team1}</div>
-          </div>
-          <div class="text-center text-[var(--muted)] font-semibold">VS</div>
-          <div class="glass rounded-xl p-3">
-            <div class="text-[10px] uppercase tracking-[0.2em] text-[var(--muted)] mb-1">Away</div>
-            <div class="font-semibold">${match.team2}</div>
-          </div>
-        </div>
-        <div class="grid gap-3 mt-4 md:grid-cols-2">
-          <div class="glass rounded-xl p-3">
-            <div class="text-[10px] uppercase tracking-[0.2em] text-[var(--muted)] mb-1">Kick-off</div>
-            <div class="font-semibold text-sm">${match.startText}</div>
-          </div>
-          <div class="glass rounded-xl p-3">
-            <div class="text-[10px] uppercase tracking-[0.2em] text-[var(--muted)] mb-1">Status</div>
-            <div class="font-semibold text-sm">${match.status}</div>
-          </div>
-          <div class="glass rounded-xl p-3">
-            <div class="text-[10px] uppercase tracking-[0.2em] text-[var(--muted)] mb-1">Venue</div>
-            <div class="font-semibold text-sm">${match.venue || 'Pending'}</div>
-          </div>
-          <div class="glass rounded-xl p-3">
-            <div class="text-[10px] uppercase tracking-[0.2em] text-[var(--muted)] mb-1">Context</div>
-            <div class="font-semibold text-sm">${match.tossWinner}</div>
-          </div>
-        </div>
-      </div>
-    `).join('');
-  } else {
-    list.innerHTML = state.liveMatches.map(match => `
-      <div class="glass rounded-2xl p-5 border border-white/10">
-        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
-          <div>
-            <div class="text-[10px] uppercase tracking-[0.2em] text-[var(--muted)]">${match.matchType} · ${match.series}</div>
-            <div class="font-semibold text-sm">${match.title}</div>
-          </div>
-          <span class="badge ${match.type === 'live' ? 'badge-success' : 'badge-accent'}">${match.typeLabel}</span>
-        </div>
-        <div class="grid gap-3 md:grid-cols-[1fr_auto_1fr] items-center">
-          <div class="glass rounded-xl p-3">
-            <div class="text-[10px] uppercase tracking-[0.2em] text-[var(--muted)] mb-1">Team 1</div>
-            <div class="font-semibold">${match.team1}</div>
-          </div>
-          <div class="text-center text-[var(--muted)] font-semibold">VS</div>
-          <div class="glass rounded-xl p-3">
-            <div class="text-[10px] uppercase tracking-[0.2em] text-[var(--muted)] mb-1">Team 2</div>
-            <div class="font-semibold">${match.team2}</div>
-          </div>
-        </div>
-        <div class="grid gap-3 mt-4 md:grid-cols-2">
-          <div class="glass rounded-xl p-3">
-            <div class="text-[10px] uppercase tracking-[0.2em] text-[var(--muted)] mb-1">Start Time</div>
-            <div class="font-semibold text-sm">${match.startText}</div>
-          </div>
-          <div class="glass rounded-xl p-3">
-            <div class="text-[10px] uppercase tracking-[0.2em] text-[var(--muted)] mb-1">Status</div>
-            <div class="font-semibold text-sm">${match.status}</div>
-          </div>
-          <div class="glass rounded-xl p-3">
-            <div class="text-[10px] uppercase tracking-[0.2em] text-[var(--muted)] mb-1">Toss / Info</div>
-            <div class="font-semibold text-sm">${match.tossWinner}</div>
-          </div>
-          <div class="glass rounded-xl p-3">
-            <div class="text-[10px] uppercase tracking-[0.2em] text-[var(--muted)] mb-1">Score</div>
-            <div class="font-semibold text-sm">${match.scoreText}</div>
-          </div>
-        </div>
-      </div>
-    `).join('');
-  }
-  status.textContent = `${state.liveMatches.length} match${state.liveMatches.length === 1 ? '' : 'es'} shown`;
-  status.className = 'badge badge-accent';
-}
-
-function loadLiveMatches() {
-  const list = document.getElementById('liveMatchesList');
-  const status = document.getElementById('liveStatus');
-  const selectedSport = document.getElementById('liveSportSelect')?.value || state.activeSport || 'cricket';
-  state.activeSport = selectedSport;
-  if (!list || !status) return;
-
-  list.innerHTML = `<div class="glass rounded-xl p-6 text-center text-[var(--muted)]">Fetching ${selectedSport === 'football' ? 'football' : 'cricket'} matches…</div>`;
-  status.textContent = 'Loading…';
-  status.className = 'badge badge-pending';
-
-  if (selectedSport === 'football') {
-    fetch('https://api.sportmonks.com/v3/football/teams/85?api_token=YuTbBhrd90KmNks2hdkap32wNdtyXSGq5AU6ADurIFJR1OshNsNRDZVDTco0&include=upcoming.participants;upcoming.league')
-      .then(res => res.json())
-      .then(result => {
-        const teamName = result?.data?.team?.name || 'Team';
-        const upcoming = Array.isArray(result?.data?.upcoming) ? result.data.upcoming : [];
-        const matches = upcoming.map(item => normalizeFootballMatch(item, teamName)).filter(Boolean);
-        state.liveMatches = matches.slice(0, 8);
-        renderLiveMatches();
-      })
-      .catch(() => {
-        state.liveMatches = [];
-        renderLiveMatches();
-        status.textContent = 'API unavailable';
-        status.className = 'badge badge-danger';
-        if (list) {
-          list.innerHTML = `<div class="glass rounded-xl p-6 text-center text-[var(--muted)]">The football API could not be reached. Please try again shortly.</div>`;
-        }
-      });
-    return;
-  }
-
-  fetch('https://api.cricapi.com/v1/cricScore?apikey=482ab14e-e261-4a7c-9b22-afcb1440672f')
-    .then(res => res.json())
-    .then(result => {
-      const matches = (result?.data || []).map(item => normalizeLiveMatch(item)).filter(Boolean);
-      state.liveMatches = matches.slice(0, 12);
-      renderLiveMatches();
-    })
-    .catch(() => {
-      state.liveMatches = [];
-      renderLiveMatches();
-      status.textContent = 'API unavailable';
-      status.className = 'badge badge-danger';
-      if (list) {
-        list.innerHTML = `<div class="glass rounded-xl p-6 text-center text-[var(--muted)]">The cricket API could not be reached. Please try again shortly.</div>`;
-      }
-    });
-}
-
 function renderChain(containerId, chain, session) {
   const c = document.getElementById(containerId);
   if (!c) return;
   let html = '';
   chain.forEach((node, i) => {
     let cls = 'future';
+    let isActiveBranch = false;
     if (session) {
       if (i < session.currentStep) {
         const sd = getEntriesForSeq(session.sequenceId).find(s => s.branch === node.label);
         cls = sd ? (sd.result === 'win' ? 'won' : sd.result === 'postponed' ? 'future' : 'lost') : 'lost';
-      } else if (i === session.currentStep) cls = 'current';
+      } else if (i === session.currentStep) {
+        cls = 'current';
+        if (i > 0 && node.label !== 'R0') isActiveBranch = true;
+      }
     }
     if (i > 0) html += `<div class="connector-line ${session && i <= session.currentStep ? 'active' : ''}"></div>`;
-    html += `<div class="chain-node ${cls}"><div class="pulse-ring"></div><div class="node-card glass rounded-xl p-3 w-[72px] text-center"><div class="node-label text-[10px] font-bold uppercase tracking-wider mb-1">${node.label}</div><div class="node-amount mono text-xs font-semibold">NRs. ${node.amount.toFixed(0)}</div></div></div>`;
+    html += `<div class="chain-node ${cls} ${isActiveBranch ? 'active-branch' : ''}"><div class="pulse-ring"></div><div class="node-card glass rounded-xl p-3 w-[72px] text-center"><div class="node-label text-[10px] font-bold uppercase tracking-wider mb-1">${node.label}</div><div class="node-amount mono text-xs font-semibold">NRs. ${node.amount.toFixed(0)}</div></div></div>`;
   });
   c.innerHTML = html;
 }
@@ -1354,7 +1140,8 @@ function recordLoss() {
   while (as.chain.length <= as.currentStep) extendChain(as.chain, as.config);
   as.currentEntryId = null;
   saveState(); updateActiveSessionUI(); updateDashboardStats();
-  showToast('Loss recorded. Advanced to ' + as.chain[as.currentStep].label, 'danger');
+  navigateTo('history');
+  showToast('Loss recorded. Advanced to ' + as.chain[as.currentStep].label + ' (Root ' + as.sequenceId + ')', 'danger');
 }
 
 function recordPending() {
@@ -1443,7 +1230,7 @@ function renderHistory() {
               </div>
             </div>
             <div class="flex items-center gap-2">
-              ${canContinue ? `<button onclick="continueSequence('${rootId}')" class="btn-ghost px-2.5 py-1.5 rounded-lg text-[11px] flex items-center gap-1.5"><i class="fa-solid fa-forward text-[10px]"></i> Continue</button>` : ''}
+              ${canContinue ? `<button onclick="continueSequence('${rootId}')" class="btn-primary px-2.5 py-1.5 rounded-lg text-[11px] flex items-center gap-1.5"><i class="fa-solid fa-plus text-[10px]"></i> Create Next Entry</button>` : ''}
               <button onclick="openSeqDetails('${rootId}')" class="btn-ghost px-2.5 py-1.5 rounded-lg text-[11px]">View</button>
             </div>
           </div>
@@ -1820,11 +1607,13 @@ function updateTeamAnalytics() {
   let total = 0, wins = 0;
   state.history.forEach(e => {
     if (e.result === 'postponed') return;
+    let matchCounted = false;
     ['team1', 'team2'].forEach((key, idx) => {
       const name = e[key];
       if (name && name !== '—') {
         if (!tm[name]) tm[name] = { name, matches: 0, w: 0 };
-        tm[name].matches++; total++;
+        tm[name].matches++;
+        if (!matchCounted) { total++; matchCounted = true; }
         if (e.result === 'win' && e.picked === (idx === 0 ? 'team1' : 'team2')) { tm[name].w++; wins++; }
       }
     });
@@ -1938,8 +1727,6 @@ function setupConfigListeners() {
 
   // History filter
   document.getElementById('historyFilter').addEventListener('change', renderHistory);
-  const liveSportSelect = document.getElementById('liveSportSelect');
-  if (liveSportSelect) liveSportSelect.addEventListener('change', loadLiveMatches);
   document.getElementById('clearHistoryBtn').addEventListener('click', async () => {
     if (state.history.length === 0) return;
     const confirmed = await showConfirm({
@@ -1994,7 +1781,6 @@ function init() {
   loadState();
   setupConfigListeners();
   refreshAll();
-  loadLiveMatches();
   navigateTo(state.activeSession ? 'active-session' : 'new-entry');
 
   // Resume timer
@@ -2002,6 +1788,14 @@ function init() {
     state.sessionStartTime = state.activeSession.startTime;
     state.sessionTimer = setInterval(updateTimer, 1000);
   }
+  
+  // Hide loading screen with smooth transition
+  setTimeout(() => {
+    const loadingScreen = document.getElementById('loadingScreen');
+    if (loadingScreen) {
+      loadingScreen.classList.add('hidden');
+    }
+  }, 800);
 }
 
 init();
